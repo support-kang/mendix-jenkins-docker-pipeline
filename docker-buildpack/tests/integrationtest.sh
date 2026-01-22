@@ -3,9 +3,11 @@ set -eux
 docker version
 docker compose version
 
-echo "Downloading test project"
+echo "Copying MDA file from build-source..."
 mkdir -p downloads
-curl -L https://s3-eu-west-1.amazonaws.com/mx-buildpack-ci/BuildpackTestApp-mx-7-16.mda -o downloads/application.mpk
+# build-source 폴더의 mda 파일을 가져와서 application.mpk로 이름 변경 (build.py 호환성 위해)
+cp ../build-source/*.mda downloads/application.mpk
+# curl -L https://s3-eu-west-1.amazonaws.com/mx-buildpack-ci/BuildpackTestApp-mx-7-16.mda -o downloads/application.mpk
 
 echo "Building MDA file"
 mkdir -p /tmp/mda-dir
