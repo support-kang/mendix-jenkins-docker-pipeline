@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:latest'
+            args '-u 0:0 -v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
     environment {
         // 생성할 이미지 이름 정의
