@@ -1,0 +1,101 @@
+pipeline {
+    agent any
+
+    environment {
+        // 생성할 이미지 이름 정의
+        APP_IMAGE = 'mendix-app:v1.0.0'
+    }
+
+    stages {
+        // 1. 깃허브에서 소스 가져오기
+        stage('Checkout') {
+            steps {
+                // 젠킨스 웹 설정에서 Git 주소를 입력했다면 scm 사용
+                checkout scm
+            }
+        }
+
+        // 2. 기반 이미지(RootFS) 빌드
+        // 사용자님의 1, 2번째 명령어
+        stage('Build Base Images') {
+            steps {
+                script {
+                    echo 'Building RootFS App Image...'
+                    sh 'docker build -t mendix-rootfs:app -f rootfs-app.dockerfile .'
+                    
+                    echo 'Building RootFS Builder Image...'
+                    sh 'docker build -t mendix-rootfs:builder -f rootfs-builder.dockerfile .'
+                }
+            }
+        }
+
+        // 3. 앱 빌드 준비 (가장 중요!)
+        // build-source 폴더의 내용을 build 폴더로 이동
+        stage('Prepare Build Context') {
+            steps {
+                script {
+                    // build 폴더 생성
+                    sh 'mkdir -p build'
+                    
+                    echo 'Copying MDA file from source directory...'
+                    // build-source 폴더 안의 모든 .mda 파일을 build 폴더로 복사합니다.
+                    // 만약 파일이 없다면 빌드가 실패할 수 있으니 build-source 폴더에 .mda 파일을 넣어주세요.
+                    sh 'cp build-source/*.mda build/'
+                }
+            }
+        }
+
+        // 4. 최종 앱 이미지 빌드
+        stage('Build Mendix App') {
+            steps {
+                script {
+                    echo 'Building Final Application Image...'
+
+                    sh """
+                    docker build \
+                    --build-arg BUILDER_ROOTFS_IMAGE=mendix-rootfs:builder \
+                    --build-arg ROOTFS_IMAGE=mendix-rootfs:app \
+                    -t ${APP_IMAGE} ./build
+                    """
+                }
+            }
+        }
+
+        // 5. 테스트 및 DB 구동 (및 외부 DB 연결 옵션 설명)
+        // -d 옵션을 사용하면 백그라운드에서 실행되며,
+        // 이미 해당 컨테이너가 설정대로 실행 중이라면 Docker가 알아서 재시작하지 않고 그대로 유지합니다.
+        
+        // [참고] 이미 존재하는 외부 DB(AWS RDS, 다른 서버의 DB, 호스트 OS의 DB 등)를 사용하려면?
+        // 1. 아래의 'docker compose' 명령 대신, 앱을 실행하는 'docker run' 명령어를 사용해야 합니다.
+        // 2. Mendix Docker 컨테이너는 환경 변수로 DB 정보를 받습니다.
+        //    예시:
+        //    sh """
+        //    docker run -d -p 8080:8080 \
+        //      -e DATABASE_ENDPOINT=postgres://username:password@host-ip:5432/dbname \
+        //      ${APP_IMAGE}
+        //    """
+        //
+        //    또는 개별 변수로 설정:
+        //      -e DATABASE_TYPE=PostgreSQL \
+        //      -e DATABASE_HOST=192.168.x.x \
+        //      -e DATABASE_PORT=5432 \
+        //      -e DATABASE_NAME=mendixdb \
+        //      -e DATABASE_USERNAME=mendix \
+        //      -e DATABASE_PASSWORD=secret \
+        //
+        // [중요] 호스트 OS의 DB를 가리킬 때는 'host.docker.internal' (Windows/Mac) 또는 호스트 IP를 사용하세요.
+
+        stage('Run Database') {
+            steps {
+                script {
+                    echo 'Ensuring Database container is running...'
+                    // docker-buildpack/tests 폴더 내의 compose 파일을 사용, 별도의 compose 파일을 사용할 경우 수정 필요
+                    sh 'docker compose -f docker-buildpack/tests/docker-compose-postgres.yml up -d'
+                    
+                    // DB가 준비될 때까지 잠시 대기
+                    sleep 10
+                }
+            }
+        }
+    }
+}
