@@ -20,11 +20,14 @@ pipeline {
         stage('Build Base Images') {
             steps {
                 script {
-                    echo 'Building RootFS App Image...'
-                    sh 'docker build -t mendix-rootfs:app -f rootfs-app.dockerfile .'
-                    
-                    echo 'Building RootFS Builder Image...'
-                    sh 'docker build -t mendix-rootfs:builder -f rootfs-builder.dockerfile .'
+                    // Dockerfile이 있는 docker-buildpack 폴더로 이동해서 실행
+                    dir('docker-buildpack') {
+                        echo 'Building RootFS App Image...'
+                        sh 'docker build -t mendix-rootfs:app -f rootfs-app.dockerfile .'
+                        
+                        echo 'Building RootFS Builder Image...'
+                        sh 'docker build -t mendix-rootfs:builder -f rootfs-builder.dockerfile .'
+                    }
                 }
             }
         }
