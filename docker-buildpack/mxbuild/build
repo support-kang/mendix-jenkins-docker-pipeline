@@ -1,0 +1,46 @@
+#!/bin/sh
+set -e
+MPR_FILENAME=$1
+MODEL_VERSION=$2
+
+# Required to allow using deprecated checksums
+export OPENSSL_ENABLE_SHA1_SIGNATURES=1
+export MONO_STRICT_MS_COMPLIANT=yes
+
+# Choose if mxbuild should run directly or from mono
+MXBUILD_COMMAND=/opt/mendix/modeler/mxbuild
+if [ ! -f $MXBUILD_COMMAND ]; then
+    MXBUILD_COMMAND="mono /opt/mendix/modeler/mxbuild.exe"
+fi
+
+cd /workdir
+
+if [ -f /workdir/project/java-version ]; then
+    echo "Using java-version to select Java version"
+    JAVA_VERSION=$(cat /workdir/project/java-version)
+elif [ -f /opt/mendix/modeler/mx ]; then
+    if JAVA_VERSION=$(/opt/mendix/modeler/mx show-java-version /workdir/project/"${MPR_FILENAME}"); then
+        echo "Using mx show-java-version to select Java version"
+    elif JAVA_VERSION=$(PROJECT_SETTINGS=`/opt/mendix/modeler/mx dump-mpr --unit-type 'Settings$ProjectSettings' /workdir/project/"${MPR_FILENAME}"` && \
+        echo -n $PROJECT_SETTINGS | \
+        jq -r '.units[] | select(.["$Type"]=="Settings$ProjectSettings") | .["settingsParts"][] | select(.["$Type"]=="Settings$RuntimeSettings").javaVersion | if (. == null or . == "null") then "Java11" else . end'); then
+        echo "Using mx dump-mpr to select Java version"
+    else
+        echo "Unable to detect Java version using mx tool"
+        JAVA_VERSION=11
+    fi
+else
+    echo "mx tool is not available"
+    JAVA_VERSION=11
+fi
+
+JAVA_VERSION=$(echo -n $JAVA_VERSION| sed s/\^Java// | head)
+
+echo "Using Java $JAVA_VERSION"
+export JDK_HOME=/etc/alternatives/java_sdk_${JAVA_VERSION}
+
+$MXBUILD_COMMAND \
+    --target=package \
+    --java-home=${JDK_HOME} --java-exe-path=${JDK_HOME}/bin/java \
+    --model-version=${MODEL_VERSION} \
+    --output=/workdir/output.mda /workdir/project/"${MPR_FILENAME}"
