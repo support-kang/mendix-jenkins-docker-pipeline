@@ -2,7 +2,7 @@ version: "2.3"
 
 services:
     mendixapp:
-        image: mendix-app:v1.0.0
+        image: ${APP_IMAGE:-mendix-app:v1.0.0}
         healthcheck:
             test: [ "CMD", "curl", "-f", "http://localhost" ]
             interval: 15s
