@@ -34,16 +34,15 @@ pipeline {
 
         // 3. 앱 빌드 준비 (가장 중요!)
         // build-source 폴더의 내용을 build 폴더로 이동
+        // 3. 앱 빌드 준비 (가장 중요!)
+        // build-source 폴더의 내용을 docker-buildpack 폴더로 복사
         stage('Prepare Build Context') {
             steps {
                 script {
-                    // build 폴더 생성
-                    sh 'mkdir -p build'
-                    
-                    echo 'Copying MDA file from source directory...'
-                    // build-source 폴더 안의 모든 .mda 파일을 build 폴더로 복사합니다.
-                    // 만약 파일이 없다면 빌드가 실패할 수 있으니 build-source 폴더에 .mda 파일을 넣어주세요.
-                    sh 'cp build-source/*.mda build/'
+                    echo 'Copying MDA file from source directory to docker-buildpack context...'
+                    // build-source 폴더 안의 mda 파일을 docker-buildpack 폴더 안으로 복사하고 이름을 고정(app.mda)
+                    // Dockerfile에서 COPY $BUILD_PATH ... 를 수행할 때 이 파일이 컨텍스트 안에 있어야 함
+                    sh 'cp build-source/*.mda docker-buildpack/app.mda'
                 }
             }
         }
@@ -53,13 +52,18 @@ pipeline {
             steps {
                 script {
                     echo 'Building Final Application Image...'
-
-                    sh """
-                    docker build \
-                    --build-arg BUILDER_ROOTFS_IMAGE=mendix-rootfs:builder \
-                    --build-arg ROOTFS_IMAGE=mendix-rootfs:app \
-                    -t ${APP_IMAGE} ./build
-                    """
+                    
+                    // docker-buildpack 폴더를 컨텍스트로 사용하여 빌드
+                    dir('docker-buildpack') {
+                        // BUILD_PATH 인자에 우리가 복사해둔 파일명(app.mda)을 전달
+                        sh """
+                        docker build \
+                        --build-arg BUILDER_ROOTFS_IMAGE=mendix-rootfs:builder \
+                        --build-arg ROOTFS_IMAGE=mendix-rootfs:app \
+                        --build-arg BUILD_PATH=app.mda \
+                        -t ${APP_IMAGE} .
+                        """
+                    }
                 }
             }
         }
