@@ -6,8 +6,8 @@ LABEL Author="Mendix Digital Ecosystems"
 LABEL maintainer="digitalecosystems@mendix.com"
 
 # Set the locale
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
 # CF buildpack version
 ARG CF_BUILDPACK=v5.0.26
@@ -42,7 +42,7 @@ RUN if [ -f /usr/bin/python ] ; then rm /usr/bin/python; fi &&\
 # Download and prepare CF Buildpack
 
 # Switch CF Buildpack to use Python 3.10+ compatibility
-ENV CF_STACK cflinuxfs4
+ENV CF_STACK=cflinuxfs4
 
 # Each comment corresponds to the script line:
 # 1. Create all directories needed by scripts
@@ -74,4 +74,4 @@ RUN PYTHON_BUILD_RPMS="python3.11-pip python3.11-devel libffi-devel gcc" && \
     microdnf remove -y $PYTHON_BUILD_RPMS && microdnf clean all && rm -rf /var/cache/yum
 
 # Add the buildpack modules
-ENV PYTHONPATH "$PYTHONPATH:/opt/mendix/buildpack/lib/:/opt/mendix/buildpack/:/opt/mendix/buildpack/lib/python3.11/site-packages"
+ENV PYTHONPATH="$PYTHONPATH:/opt/mendix/buildpack/lib/:/opt/mendix/buildpack/:/opt/mendix/buildpack/lib/python3.11/site-packages"

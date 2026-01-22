@@ -16,7 +16,6 @@ pipeline {
         }
 
         // 2. 기반 이미지(RootFS) 빌드
-        // 사용자님의 1, 2번째 명령어
         stage('Build Base Images') {
             steps {
                 script {
@@ -31,9 +30,6 @@ pipeline {
                 }
             }
         }
-
-        // 3. 앱 빌드 준비 (가장 중요!)
-        // build-source 폴더의 내용을 build 폴더로 이동
         // 3. 앱 빌드 준비 (가장 중요!)
         // build-source 폴더의 내용을 docker-buildpack 폴더로 복사
         stage('Prepare Build Context') {
