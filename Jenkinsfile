@@ -94,7 +94,7 @@ pipeline {
                             echo "Application is UP!"
                             exit 0
                         fi
-                        echo "Waiting for app... ($i/30)"
+                        echo "Waiting for app... (\$i/30)"
                         sleep 10
                     done
                     echo "Application failed to start."
