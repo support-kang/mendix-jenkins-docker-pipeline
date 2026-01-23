@@ -4,7 +4,7 @@ services:
     mendixapp:
         image: ${APP_IMAGE:-mendix-app:v1.0.0}
         healthcheck:
-            test: [ "CMD", "curl", "-f", "http://localhost" ]
+            test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
             interval: 15s
             retries: 2
             start_period: 10s

@@ -46,10 +46,19 @@ docker compose version
 준비된 이미지(`my-jenkins-docker`)를 실행할 때, **호스트의 도커 소켓**을 공유해야 젠킨스가 호스트의 도커를 제어할 수 있습니다.
 
 ```bash
-docker run -d -p 8080:8080 -p 50000:50000 --name jenkins \
+# Bash에서 실행
+docker run -d -p 8082:8080 -p 50000:50000 --name jenkins \
   -v jenkins_home:/var/jenkins_home \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --group-add $(stat -c '%g' /var/run/docker.sock) \
+  my-jenkins-docker
+```
+
+```powershell
+# PowerShell에서 실행 (Windows Docker Desktop의 경우 group-add 옵션 제외)
+docker run -d -p 8082:8080 -p 50000:50000 --name jenkins `
+  -v jenkins_home:/var/jenkins_home `
+  -v /var/run/docker.sock:/var/run/docker.sock `
   my-jenkins-docker
 ```
 

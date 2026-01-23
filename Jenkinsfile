@@ -89,15 +89,17 @@ pipeline {
                     echo 'Verifying application health...'
                     // 간단한 Health Check (메인 페이지 호출)
                     sh """
-                    for i in {1..10}; do
+                    for i in {1..30}; do
                         if curl -s -f http://localhost:8080 > /dev/null; then
                             echo "Application is UP!"
                             exit 0
                         fi
-                        echo "Waiting for app..."
-                        sleep 5
+                        echo "Waiting for app... ($i/30)"
+                        sleep 10
                     done
                     echo "Application failed to start."
+                    echo "=== Container Logs ==="
+                    docker compose -f docker-buildpack/tests/docker-compose-postgres.yml logs mendixapp
                     exit 1
                     """
                 }
