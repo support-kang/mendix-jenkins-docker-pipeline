@@ -3,6 +3,9 @@
 [English](#english-version) | [한국어](#korean-version)
 
 <a name="korean-version"></a>
+
+<img width="3158" height="1234" alt="Image" src="https://github.com/user-attachments/assets/763c1b6c-2f22-447b-a400-50cf6dd4eb9c" />
+
 ## 📖 프로젝트 개요
 이 프로젝트는 **Mendix 애플리케이션**의 지속적 배포(CD)를 자동화하기 위한 Jenkins 파이프라인과 Docker 구성을 제공합니다.
 Git 리포지토리에 코드가 푸시되면 Jenkins가 트리거되어 Mendix 앱을 빌드하고, Docker Compose를 통해 배포합니다.
