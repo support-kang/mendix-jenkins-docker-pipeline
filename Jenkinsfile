@@ -67,17 +67,18 @@ pipeline {
                         sh 'rm -rf docker-buildpack/build-context'
                         
                         // build.py 실행 (소스 -> MDA/Project 변환)
-                        // Jenkins 에이전트에 python3가 설치되어 있어야 함 (Dockerfile에 추가됨)
-                        sh """
-                        python3 docker-buildpack/build.py \
-                            --source build-source \
-                            --destination docker-buildpack/build-context \
-                            build-mda-dir
-                        """
+                        // build.py가 내부 'scripts' 폴더를 참조하므로 실행 위치를 docker-buildpack으로 변경해야 함
+                        dir('docker-buildpack') {
+                            sh """
+                            python3 build.py \
+                                --source ../build-source \
+                                --destination build-context \
+                                build-mda-dir
+                            """
+                        }
                         
-                        // 빌드 컨텍스트를 생성된 디렉토리로 변경
+                        // 빌드 컨텍스트 변경
                         buildContext = "docker-buildpack/build-context"
-                        // build.py로 생성된 구조는 기본값(BUILD_PATH=project)을 따르므로 인자 추가 불필요
                     }
 
                     echo "Building Final Application Image: ${APP_IMAGE}"
