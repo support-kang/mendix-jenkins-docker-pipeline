@@ -88,18 +88,42 @@ pipeline {
                 script {
                     echo 'Verifying application health...'
                     // 간단한 Health Check (메인 페이지 호출)
+                    echo 'Verifying application health...'
+                    // Docker Native Healthcheck 상태 확인
                     sh """
-                    for i in {1..30}; do
-                        if curl -s -f http://localhost:8080 > /dev/null; then
-                            echo "Application is UP!"
+                    # 컨테이너 ID 조회
+                    CONTAINER_ID=\$(docker compose -f docker-buildpack/tests/docker-compose-postgres.yml ps -q mendixapp)
+                    
+                    if [ -z "\$CONTAINER_ID" ]; then
+                        echo "Error: Application container not found!"
+                        exit 1
+                    fi
+
+                    echo "Monitoring container health for \$CONTAINER_ID..."
+                    
+                    # 최대 5분 대기 (5초 * 60회)
+                    for i in {1..60}; do
+                        HEALTH=\$(docker inspect --format='{{.State.Health.Status}}' \$CONTAINER_ID)
+                        echo "Health Status: \$HEALTH (\$i/60)"
+                        
+                        if [ "\$HEALTH" == "healthy" ]; then
+                            echo "Application is UP and HEALTHY!"
                             exit 0
                         fi
-                        echo "Waiting for app... (\$i/30)"
-                        sleep 10
+                        
+                        if [ "\$HEALTH" == "unhealthy" ]; then
+                            echo "Application verification FAILED (Unhealthy)."
+                            echo "=== Container Logs ==="
+                            docker logs \$CONTAINER_ID
+                            exit 1
+                        fi
+                        
+                        sleep 5
                     done
-                    echo "Application failed to start."
+                    
+                    echo "Application verification TIMED OUT."
                     echo "=== Container Logs ==="
-                    docker compose -f docker-buildpack/tests/docker-compose-postgres.yml logs mendixapp
+                    docker logs \$CONTAINER_ID
                     exit 1
                     """
                 }

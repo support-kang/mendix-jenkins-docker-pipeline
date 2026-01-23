@@ -12,7 +12,7 @@ ENV LC_ALL=C.UTF-8
 # install dependencies & remove package lists
 RUN microdnf update -y && \
     microdnf module enable nginx:1.24 -y && \
-    microdnf install -y glibc-langpack-en python311 openssl nginx nginx-mod-stream java-11-openjdk-headless java-17-openjdk-headless java-21-openjdk-headless tzdata-java fontconfig binutils && \
+    microdnf install -y glibc-langpack-en python311 openssl nginx nginx-mod-stream java-11-openjdk-headless java-17-openjdk-headless java-21-openjdk-headless tzdata-java fontconfig binutils curl && \
     microdnf clean all && rm -rf /var/cache/yum
 
 # Set the user ID
