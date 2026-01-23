@@ -1,0 +1,52 @@
+//
+// DISCLAIMER:
+// Do not change this file because it is core styling.
+// Customizing core files will make updating Atlas much more difficult in the future.
+// To customize any core styling, copy the part you want to customize to styles/web/sass/app/ so the core styling is overwritten.
+//
+
+@mixin label-helpers() {
+    /* ==========================================================================
+       Label
+
+    //== Design Properties
+    //## Helper classes to change the look and feel of the component including
+    badge widget
+    ========================================================================== */
+    // Color variations
+    .label-secondary,
+    .label-default {
+        color: var(--label-default-color);
+        background-color: var(--label-default-bg);
+    }
+
+    .label-primary {
+        color: var(--label-primary-color);
+        background-color: var(--label-primary-bg);
+    }
+
+    .label-success {
+        color: var(--label-success-color);
+        background-color: var(--label-success-bg);
+    }
+
+    .label-inverse {
+        color: var(--label-inverse-color);
+        background-color: var(--label-inverse-bg);
+    }
+
+    .label-info {
+        color: var(--label-info-color);
+        background-color: var(--label-info-bg);
+    }
+
+    .label-warning {
+        color: var(--label-warning-color);
+        background-color: var(--label-warning-bg);
+    }
+
+    .label-danger {
+        color: var(--label-danger-color);
+        background-color: var(--label-danger-bg);
+    }
+}

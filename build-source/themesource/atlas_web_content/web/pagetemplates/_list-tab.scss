@@ -1,0 +1,29 @@
+.listtab-tabs.mx-tabcontainer {
+    background: var(--bg-color-secondary);
+    .mx-tabcontainer-tabs {
+        background: var(--brand-primary);
+        margin-bottom: 0;
+        li {
+            > a {
+                color: var(--font-color-contrast);
+                opacity: 0.6;
+                &:hover,
+                &:focus {
+                    color: var(--font-color-contrast);
+                }
+            }
+            &.active {
+                > a {
+                    opacity: 1;
+                    color: var(--font-color-contrast);
+                    border-color: var(--color-base);
+                    &:hover,
+                    &:focus {
+                        color: var(--font-color-contrast);
+                        border-color: var(--color-base);
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,83 @@
+//
+// DISCLAIMER:
+// Do not change this file because it is core styling.
+// Customizing core files will make updating Atlas much more difficult in the future.
+// To customize any core styling, copy the part you want to customize to styles/web/sass/app/ so the core styling is overwritten.
+//
+
+@mixin group-box() {
+    /* ==========================================================================
+       Group box
+
+       Default Mendix group box
+    ========================================================================== */
+
+    .mx-groupbox {
+        margin: 0;
+
+        > .mx-groupbox-header {
+            margin: 0;
+            color: var(--groupbox-default-color);
+            border-width: 1px 1px 0 1px;
+            border-style: solid;
+            border-color: var(--groupbox-default-bg);
+            background: var(--groupbox-default-bg);
+            font-size: var(--font-size-h5);
+            border-radius: var(--border-radius-default) var(--border-radius-default) 0 0;
+            padding: calc(var(--spacing-small) * 1.5) var(--spacing-medium);
+
+            .mx-groupbox-collapse-icon {
+                margin-top: 0.1em;
+            }
+            &:focus-visible {
+                @extend .focus-ring !optional;
+            }
+        }
+
+        // Header options
+        > h1.mx-groupbox-header {
+            font-size: var(--font-size-h1);
+        }
+
+        > h2.mx-groupbox-header {
+            font-size: var(--font-size-h2);
+        }
+
+        > h3.mx-groupbox-header {
+            font-size: var(--font-size-h3);
+        }
+
+        > h4.mx-groupbox-header {
+            font-size: var(--font-size-h4);
+        }
+
+        > h5.mx-groupbox-header {
+            font-size: var(--font-size-h5);
+        }
+
+        > h6.mx-groupbox-header {
+            font-size: var(--font-size-h6);
+        }
+
+        > .mx-groupbox-body {
+            padding: calc(var(--spacing-small) * 1.5) var(--spacing-medium);
+            border-width: 1px;
+            border-style: solid;
+            border-color: var(--groupbox-default-bg);
+            background-color: #ffffff;
+            border-radius: var(--border-radius-default);
+        }
+
+        .mx-groupbox-header + .mx-groupbox-body {
+            border-top: none;
+        }
+
+        &.collapsed > .mx-groupbox-header {
+        }
+    }
+
+    //With header
+    .mx-groupbox-header ~ .mx-groupbox-body {
+        border-radius: 0 0 var(--border-radius-default) var(--border-radius-default);
+    }
+}
