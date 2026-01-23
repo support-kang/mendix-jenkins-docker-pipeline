@@ -85,6 +85,32 @@ docker run -d -p 8080:8080 -p 50000:50000 --name jenkins \
 
 ---
 
+## 💾 대용량 MDA 파일 처리 가이드 (Large File Handling)
+Mendix 빌드 아티팩트(`.mda`) 용량이 커서 Git에 올리기 어려운 경우, 다음 방법들을 사용하세요.
+
+### 1. Git LFS (Large File Storage) 사용 (추천)
+Git의 대용량 파일 확장 기능을 사용하여 `.mda` 파일을 버전 관리합니다.
+1.  로컬 및 젠킨스 서버에 **Git LFS**를 설치합니다.
+2.  프로젝트에서 LFS 추적 설정: `git lfs track "*.mda"`
+3.  평소처럼 커밋 및 푸시하면 자동으로 LFS에 저장됩니다.
+
+### 2. 외부 저장소 다운로드 (S3, Nexus 등)
+파일을 별도 파일 서버나 클라우드 스토리지에 올리고, 빌드 시점에 다운로드합니다.
+*   **Jenkinsfile 수정 예시**:
+    ```groovy
+    script {
+        // MDA 파일이 없으면 다운로드
+        if (!fileExists('docker-buildpack/app.mda')) {
+            sh 'curl -o docker-buildpack/app.mda "https://my-storage.com/app-v1.mda"'
+        }
+    }
+    ```
+
+### 3. 수동 복사 (폐쇄망 등)
+젠킨스 에이전트의 워크스페이스(`build-source` 폴더)에 직접 파일을 복사해둡니다.
+
+---
+
 ## 🔒 폐쇄망(Air-gapped) 환경 가이드
 
 인터넷이 없는 환경에서는 외부에서 빌드된 이미지를 반입하여 배포하는 것을 권장합니다.
@@ -170,6 +196,29 @@ docker run -d -p 8080:8080 -p 50000:50000 --name jenkins \
     *   Create a new Pipeline job in Jenkins.
     *   Connect your Git repository.
     *   Click 'Build Now'.
+
+---
+
+## 💾 Handling Large MDA Files
+If your `.mda` file is too large for Git, use one of the following methods:
+
+### 1. Git LFS (Large File Storage) (Recommended)
+Use Git LFS to version control large `.mda` files.
+1.  Install **Git LFS** on both local machine and Jenkins server.
+2.  Track mda files: `git lfs track "*.mda"`
+3.  Commit and push as usual.
+
+### 2. Download from External Storage (S3, Nexus, etc.)
+Upload the file to an external file server and download it during the build.
+*   **Jenkinsfile Example**:
+    ```groovy
+    script {
+        sh 'curl -o docker-buildpack/app.mda "https://my-storage.com/app-v1.mda"'
+    }
+    ```
+
+### 3. Manual Copy
+Manually copy the file to the `build-source` folder in the Jenkins workspace.
 
 ---
 

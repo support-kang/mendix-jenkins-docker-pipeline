@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // 1. 개선: 동적 버전 관리 (빌드 번호 사용)
+        // 1. 버전 관리 (빌드 번호 사용)
         // 기본값은 mendix-app:build-X 형식이 됨
         APP_IMAGE = "mendix-app:build-${env.BUILD_NUMBER}"
     }
@@ -14,7 +14,7 @@ pipeline {
             }
         }
 
-        // 2. 개선: 빌드 속도 최적화 (Conditional Build)
+        // 2. 빌드 속도 최적화 (Conditional Build)
         // 이미지가 존재하면 빌드를 건너뜀
         stage('Build Base Images') {
             steps {
@@ -82,7 +82,7 @@ pipeline {
             }
         }
 
-        // 4. 개선: 통합 테스트 (Verification)
+        // 3. 통합 테스트 (Verification)
         stage('Verification') {
             steps {
                 script {
@@ -105,7 +105,7 @@ pipeline {
         }
     }
 
-    // 3. 개선: 디스크 정리 (Cleanup)
+    // 4. 디스크 정리 (Cleanup)
     post {
         always {
             script {
