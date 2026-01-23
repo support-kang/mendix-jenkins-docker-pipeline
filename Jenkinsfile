@@ -40,31 +40,52 @@ pipeline {
             }
         }
 
-        stage('Prepare Build Context') {
+        stage('Prepare & Build Logic') {
             steps {
                 script {
-                    echo 'Copying MDA file from source directory to docker-buildpack context...'
-                    // 권한 문제 방지를 위해 기존 파일이 있다면 삭제
-                    sh 'rm -f docker-buildpack/app.mda'
-                    sh 'cp build-source/*.mda docker-buildpack/app.mda'
-                }
-            }
-        }
-
-        stage('Build Mendix App') {
-            steps {
-                script {
-                    echo "Building Final Application Image: ${APP_IMAGE}"
+                    echo 'Determining build strategy...'
                     
-                    dir('docker-buildpack') {
+                    // 기본 빌드 인자 설정
+                    def buildArgs = "--build-arg BUILDER_ROOTFS_IMAGE=mendix-rootfs:builder --build-arg ROOTFS_IMAGE=mendix-rootfs:app"
+                    def buildContext = "docker-buildpack"
+
+                    // 1. MDA 파일 존재 여부 확인
+                    if (sh(script: "ls build-source/*.mda > /dev/null 2>&1", returnStatus: true) == 0) {
+                        echo "Strategy: MDA File Found. Using existing MDA."
+                        
+                        // 기존 MDA 정리 및 복사
+                        sh 'rm -f docker-buildpack/app.mda'
+                        sh 'cp build-source/*.mda docker-buildpack/app.mda'
+                        
+                        // MDA 경로를 빌드 인자로 추가
+                        buildArgs += " --build-arg BUILD_PATH=app.mda"
+                        
+                    } else {
+                        echo "Strategy: No MDA Found. Attempting to build from source using build.py..."
+                        
+                        // 소스 빌드 결과 저장할 디렉토리 정리
+                        sh 'rm -rf docker-buildpack/build-context'
+                        
+                        // build.py 실행 (소스 -> MDA/Project 변환)
+                        // Jenkins 에이전트에 python3가 설치되어 있어야 함 (Dockerfile에 추가됨)
                         sh """
-                        docker build \
-                        --build-arg BUILDER_ROOTFS_IMAGE=mendix-rootfs:builder \
-                        --build-arg ROOTFS_IMAGE=mendix-rootfs:app \
-                        --build-arg BUILD_PATH=app.mda \
-                        -t ${APP_IMAGE} .
+                        python3 docker-buildpack/build.py \
+                            --source build-source \
+                            --destination docker-buildpack/build-context \
+                            build-mda-dir
                         """
+                        
+                        // 빌드 컨텍스트를 생성된 디렉토리로 변경
+                        buildContext = "docker-buildpack/build-context"
+                        // build.py로 생성된 구조는 기본값(BUILD_PATH=project)을 따르므로 인자 추가 불필요
                     }
+
+                    echo "Building Final Application Image: ${APP_IMAGE}"
+                    echo "Context: ${buildContext}"
+                    echo "Args: ${buildArgs}"
+
+                    // 최종 Docker Build 수행
+                    sh "docker build ${buildArgs} -t ${APP_IMAGE} ${buildContext}"
                 }
             }
         }
@@ -135,19 +156,25 @@ pipeline {
     post {
         always {
             script {
-                echo 'Cleaning up...'
-                // 테스트 종료 후 컨테이너 정리
-                sh 'docker compose -f docker-buildpack/tests/docker-compose-postgres.yml down'
-                
+                echo 'Pipeline execution finished.'
                 // 오래된/사용하지 않는 이미지 정리 (선택 사항)
-                // sh 'docker image prune -f' 
+                sh 'docker image prune -f' 
             }
         }
         success {
-            echo 'Pipeline completed successfully!'
+            echo 'Pipeline completed successfully! Test environment is preserved.'
         }
         failure {
-            echo 'Pipeline failed!'
+            script {
+                echo 'Pipeline failed! Cleaning up...'
+                sh 'docker compose -f docker-buildpack/tests/docker-compose-postgres.yml down'
+            }
+        }
+        aborted {
+            script {
+                echo 'Pipeline aborted! Cleaning up...'
+                sh 'docker compose -f docker-buildpack/tests/docker-compose-postgres.yml down'
+            }
         }
     }
 }

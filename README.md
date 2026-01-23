@@ -70,9 +70,25 @@ docker run -d -p 8082:8080 -p 50000:50000 --name jenkins `
 ## 📝 사용 방법 (How to Use)
 
 1.  **프로젝트 설정**: 이 리포지토리의 파일들을 Mendix 프로젝트 루트에 복사합니다.
-2.  **MDA 파일 준비**: 
-    *   Mendix Modeler에서 배포 패키지(.mda)를 생성합니다.
-    *   생성된 파일을 프로젝트 내 **`build-source` 폴더**에 복사합니다. (폴더가 없다면 생성)
+2.  **빌드 소스 준비 (Build Source)**: `build-source` 폴더에 다음 **3가지 구조 중 하나**를 준비합니다. `.mpk` 파일이나 `.mda` 파일이 필수는 아닙니다.
+    
+    *   **옵션 A: 프로젝트 소스 코드 (추천)**
+        *   Mendix 프로젝트 폴더 전체를 넣습니다.
+        *   **주의**: `.mpr` 파일이 `build-source` 폴더 바로 아래에 위치해야 합니다.
+        ```
+        build-source/
+        ├── MyProject.mpr   <-- 필수
+        ├── javasource/
+        ├── resources/
+        └── theme/
+        ```
+
+    *   **옵션 B: 배포 파일 (.mda)**
+        *   이미 빌드된 배포 파일(.mda) 하나만 넣습니다.
+        ```
+        build-source/
+        └── MyProject.mda
+        ```
 3.  **파이프라인 실행**:
     *   젠킨스에서 'New Item' -> 'Pipeline'을 생성합니다.
     *   'Pipeline script from SCM'을 선택하고 Git 리포지토리를 연결합니다.
@@ -170,9 +186,32 @@ docker run -d -p 8080:8080 -p 50000:50000 --name jenkins \
 ## 📝 How to Use
 
 1.  **Setup**: Copy files from this repository to your Mendix project root.
-2.  **Prepare MDA**: 
-    *   Build `.mda` package in Mendix Modeler.
-    *   Place it in the **`build-source` folder**.
+2.  **Prepare Build Source**: Place one of the **3 supported structures** in the **`build-source` folder**:
+    
+    *   **Option A: Project Source (Recommended)**
+        *   The entire Mendix project folder.
+        *   **Note**: The `.mpr` file must be directly inside `build-source`.
+        ```
+        build-source/
+        ├── MyProject.mpr   <-- Required
+        ├── javasource/
+        ├── resources/
+        └── theme/
+        ```
+
+    *   **Option B: Package File (.mpk)**
+        *   A single Mendix export package (.mpk).
+        ```
+        build-source/
+        └── MyProject.mpk
+        ```
+
+    *   **Option C: Diploma File (.mda)**
+        *   A pre-built deployment archive (.mda).
+        ```
+        build-source/
+        └── MyProject.mda
+        ```
 3.  **Run Pipeline**:
     *   Create a new Pipeline job in Jenkins.
     *   Connect your Git repository.

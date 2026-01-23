@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     curl \
     gnupg \
-    sudo
+    sudo \
+    python3
 
 # 2. Docker 공식 GPG 키 추가 및 리포지토리 설정
 RUN mkdir -p /etc/apt/keyrings && \
@@ -35,3 +36,7 @@ RUN echo "jenkins ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 # 다시 젠킨스 사용자로 전환
 USER jenkins
+
+# 6. 플러그인 설치 (폐쇄망 지원을 위해 이미지에 포함)
+COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
