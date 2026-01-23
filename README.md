@@ -70,7 +70,7 @@ docker run -d -p 8082:8080 -p 50000:50000 --name jenkins `
 ## 📝 사용 방법 (How to Use)
 
 1.  **프로젝트 설정**: 이 리포지토리의 파일들을 Mendix 프로젝트 루트에 복사합니다.
-2.  **빌드 소스 준비 (Build Source)**: `build-source` 폴더에 다음 **3가지 구조 중 하나**를 준비합니다. `.mpk` 파일이나 `.mda` 파일이 필수는 아닙니다.
+2.  **빌드 소스 준비 (Build Source)**: `build-source` 폴더에 다음 **2가지 구조 중 하나**를 준비합니다. `.mda` 파일이 필수는 아닙니다.
     
     *   **옵션 A: 프로젝트 소스 코드 (추천)**
         *   Mendix 프로젝트 폴더 전체를 넣습니다.
@@ -96,7 +96,51 @@ docker run -d -p 8082:8080 -p 50000:50000 --name jenkins `
 
 ---
 
-## 💾 대용량 MDA 파일 처리 가이드 (Large File Handling)
+## � 환경 변수 및 Mendix 상수 설정 (Environment Variables Configuration)
+
+Docker 배포 시 Mendix 모듈의 **Constant(상수)** 값을 변경하거나 시스템 환경 변수를 설정할 수 있습니다.
+보안상 중요한 값(API Key, Password 등)은 Git에 올리지 않고 별도로 관리해야 합니다.
+
+### 1. Mendix 상수 (Constant) 오버라이드
+Mendix의 상수는 `MXRUNTIME_` 접두사를 사용하여 환경 변수로 덮어쓸 수 있습니다.
+*   **규칙**: `MXRUNTIME_` + `모듈명_상수명` (특수문자 `.`은 `_`로 치환)
+*   **예시**: 모듈명 `MyModule`, 상수명 `MyConstant` -> `MXRUNTIME_MyModule_MyConstant`
+
+### 2. `.env` 파일을 이용한 설정 (권장)
+`docker-compose.yml` 파일에 직접 값을 입력하는 대신, `.env` 파일을 사용하여 관리하는 것을 권장합니다.
+
+1.  **`.env` 파일 생성**: 프로젝트 루트에 생성하고 `.gitignore`에 추가합니다.
+    ```properties
+    DB_PASSWORD=MySecurePassword123!
+    SMTP_HOST=smtp.gmail.com
+    MY_API_KEY=12345
+    ```
+
+2.  **`docker-compose.yml` 에서 참조**:
+    ```yaml
+    services:
+      mendixapp:
+        image: mendix-app:latest
+        environment:
+          - ADMIN_PASSWORD=${DB_PASSWORD}
+          - MXRUNTIME_MyEmailModule_SMTPServerAddress=${SMTP_HOST}
+          - MXRUNTIME_MyModule_MySecretKey=${MY_API_KEY}
+    ```
+
+### 3. 컨테이너 내부 쉘에서 확인
+실행 중인 컨테이너에 환경 변수가 잘 적용되었는지 확인하는 방법입니다.
+
+```bash
+# 1. 컨테이너 접속 (Bash)
+docker exec -it <container_name> /bin/bash
+
+# 2. 환경 변수 확인
+env | grep MXRUNTIME_
+```
+
+---
+
+## �💾 대용량 MDA 파일 처리 가이드 (Large File Handling)
 Mendix 빌드 아티팩트(`.mda`) 용량이 커서 Git에 올리기 어려운 경우, 다음 방법들을 사용하세요.
 
 ### 1. Git LFS (Large File Storage) 사용 (추천)
@@ -216,6 +260,50 @@ docker run -d -p 8080:8080 -p 50000:50000 --name jenkins \
     *   Create a new Pipeline job in Jenkins.
     *   Connect your Git repository.
     *   Click 'Build Now'.
+
+---
+
+## 🔧 Configuration of Environment Variables & Mendix Constants
+
+You can override **Mendix Constants** and configure system environment variables for Docker deployments.
+Sensitive values (API Keys, Passwords, etc.) should be managed separately and not committed to Git.
+
+### 1. Overriding Mendix Constants
+You can override Mendix constants using environment variables with the `MXRUNTIME_` prefix.
+*   **Rule**: `MXRUNTIME_` + `ModuleName_ConstantName` (replace `.` with `_`)
+*   **Example**: Module `MyModule`, Constant `MyConstant` -> `MXRUNTIME_MyModule_MyConstant`
+
+### 2. Using `.env` Files (Recommended)
+Instead of hardcoding values in `docker-compose.yml`, use a `.env` file.
+
+1.  **Create `.env` file**: Create it in the project root and add it to `.gitignore`.
+    ```properties
+    DB_PASSWORD=MySecurePassword123!
+    SMTP_HOST=smtp.gmail.com
+    MY_API_KEY=12345
+    ```
+
+2.  **Reference in `docker-compose.yml`**:
+    ```yaml
+    services:
+      mendixapp:
+        image: mendix-app:latest
+        environment:
+          - ADMIN_PASSWORD=${DB_PASSWORD}
+          - MXRUNTIME_MyEmailModule_SMTPServerAddress=${SMTP_HOST}
+          - MXRUNTIME_MyModule_MySecretKey=${MY_API_KEY}
+    ```
+
+### 3. Verifying in Container Shell
+To check if environment variables are correctly applied inside the running container:
+
+```bash
+# 1. Access Container (Bash)
+docker exec -it <container_name> /bin/bash
+
+# 2. Check Environment Variables
+env | grep MXRUNTIME_
+```
 
 ---
 
