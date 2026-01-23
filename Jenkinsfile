@@ -106,12 +106,12 @@ pipeline {
                         HEALTH=\$(docker inspect --format='{{.State.Health.Status}}' \$CONTAINER_ID)
                         echo "Health Status: \$HEALTH (\$i/60)"
                         
-                        if [ "\$HEALTH" == "healthy" ]; then
+                        if [ "\$HEALTH" = "healthy" ]; then
                             echo "Application is UP and HEALTHY!"
                             exit 0
                         fi
                         
-                        if [ "\$HEALTH" == "unhealthy" ]; then
+                        if [ "\$HEALTH" = "unhealthy" ]; then
                             echo "Application verification FAILED (Unhealthy)."
                             echo "=== Container Logs ==="
                             docker logs \$CONTAINER_ID
