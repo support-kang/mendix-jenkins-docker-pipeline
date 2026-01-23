@@ -17,24 +17,10 @@ Git 리포지토리에 코드가 푸시되면 Jenkins가 트리거되어 Mendix 
 공식 `jenkins/jenkins` 이미지에는 도커 도구가 포함되어 있지 않습니다. 아래 두 가지 방법 중 하나를 선택하세요.
 
 #### 🅰️ 방법 A: 커스텀 이미지 만들기 (권장)
-도커 도구가 미리 설치된 이미지를 빌드하여 사용합니다.
+이 리포지토리에 포함된 `Dockerfile`을 사용하여 도커 도구(`docker`, `docker compose`)와 권한 설정이 완료된 이미지를 빌드합니다.
 
-**`Dockerfile` 작성:**
-```dockerfile
-FROM jenkins/jenkins:lts
-USER root
-
-# Docker CLI 및 Docker Compose 플러그인 설치
-RUN apt-get update && apt-get install -y lsb-release && \
-    curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc https://download.docker.com/linux/debian/gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
-    https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
-    apt-get update && apt-get install -y docker-ce-cli docker-compose-plugin
-
-USER jenkins
-```
-**이미지 빌드:**
 ```bash
+# 리포지토리 루트(Dockerfile이 있는 위치)에서 실행
 docker build -t my-jenkins-docker .
 ```
 
@@ -139,24 +125,10 @@ Therefore, **Docker CLI** and **Docker Compose Plugin** must be installed in the
 The official `jenkins/jenkins` image does not include Docker tools. Choose one of the following methods.
 
 #### 🅰️ Method A: Build Custom Image (Recommended)
-Build an image with Docker tools pre-installed.
+Use the `Dockerfile` included in this repository to build an image with Docker tools (`docker`, `docker compose`) and permissions pre-configured.
 
-**Create `Dockerfile`:**
-```dockerfile
-FROM jenkins/jenkins:lts
-USER root
-
-# Install Docker CLI & Docker Compose Plugin
-RUN apt-get update && apt-get install -y lsb-release && \
-    curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc https://download.docker.com/linux/debian/gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
-    https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
-    apt-get update && apt-get install -y docker-ce-cli docker-compose-plugin
-
-USER jenkins
-```
-**Build Image:**
 ```bash
+# Run in the repository root (where Dockerfile is located)
 docker build -t my-jenkins-docker .
 ```
 
