@@ -73,8 +73,8 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying application stack...'
-                    // docker-compose (v1) 사용 (docker compose v2가 지원되지 않는 환경 대응)
-                    sh 'docker-compose -f docker-buildpack/tests/docker-compose-postgres.yml up -d'
+                    // docker compose (v2) 사용 (README 가이드에 따라 환경 구성 필요)
+                    sh 'docker compose -f docker-buildpack/tests/docker-compose-postgres.yml up -d'
                     
                     echo 'Waiting for application to start...'
                     sleep 30
@@ -110,8 +110,8 @@ pipeline {
         always {
             script {
                 echo 'Cleaning up...'
-                // 테스트 종료 후 컨테이너 정리 (docker-compose v1 사용)
-                sh 'docker-compose -f docker-buildpack/tests/docker-compose-postgres.yml down'
+                // 테스트 종료 후 컨테이너 정리
+                sh 'docker compose -f docker-buildpack/tests/docker-compose-postgres.yml down'
                 
                 // 오래된/사용하지 않는 이미지 정리 (선택 사항)
                 // sh 'docker image prune -f' 
