@@ -67,17 +67,18 @@ pipeline {
                         sh 'rm -rf docker-buildpack/build-context'
                         
                         // build.py 실행 (소스 -> MDA/Project 변환)
-                        // Jenkins 에이전트에 python3가 설치되어 있어야 함 (Dockerfile에 추가됨)
-                        sh """
-                        python3 docker-buildpack/build.py \
-                            --source build-source \
-                            --destination docker-buildpack/build-context \
-                            build-mda-dir
-                        """
+                        // build.py가 내부 'scripts' 폴더를 참조하므로 실행 위치를 docker-buildpack으로 변경해야 함
+                        dir('docker-buildpack') {
+                            sh """
+                            python3 build.py \
+                                --source ../build-source \
+                                --destination build-context \
+                                build-mda-dir
+                            """
+                        }
                         
-                        // 빌드 컨텍스트를 생성된 디렉토리로 변경
+                        // 빌드 컨텍스트 변경
                         buildContext = "docker-buildpack/build-context"
-                        // build.py로 생성된 구조는 기본값(BUILD_PATH=project)을 따르므로 인자 추가 불필요
                     }
 
                     echo "Building Final Application Image: ${APP_IMAGE}"
@@ -108,12 +109,10 @@ pipeline {
             steps {
                 script {
                     echo 'Verifying application health...'
-                    // 간단한 Health Check (메인 페이지 호출)
-                    echo 'Verifying application health...'
                     // Docker Native Healthcheck 상태 확인
                     sh """
-                    # 컨테이너 ID 조회
-                    CONTAINER_ID=\$(docker compose -f docker-buildpack/tests/docker-compose-postgres.yml ps -q mendixapp)
+                    # 컨테이너 ID 조회 (종료된 컨테이너 포함)
+                    CONTAINER_ID=\$(docker compose -f docker-buildpack/tests/docker-compose-postgres.yml ps -a -q mendixapp)
                     
                     if [ -z "\$CONTAINER_ID" ]; then
                         echo "Error: Application container not found!"
@@ -122,11 +121,36 @@ pipeline {
 
                     echo "Monitoring container health for \$CONTAINER_ID..."
                     
+                    # 컨테이너 시작 대기 (최대 30초)
+                    echo "Waiting for container to start..."
+                    for i in {1..10}; do
+                         STATUS=\$(docker inspect --format='{{.State.Status}}' \$CONTAINER_ID)
+                         if [ "\$STATUS" = "running" ]; then
+                             break
+                         fi
+                         if [ "\$STATUS" = "exited" ] || [ "\$STATUS" = "dead" ]; then
+                             echo "Container exited early with status: \$STATUS"
+                             echo "=== Container Logs ==="
+                             docker logs \$CONTAINER_ID
+                             exit 1
+                         fi
+                         sleep 3
+                    done
+
                     # 최대 5분 대기 (5초 * 60회)
                     for i in {1..60}; do
                         HEALTH=\$(docker inspect --format='{{.State.Health.Status}}' \$CONTAINER_ID)
-                        echo "Health Status: \$HEALTH (\$i/60)"
+                        STATUS=\$(docker inspect --format='{{.State.Status}}' \$CONTAINER_ID)
                         
+                        echo "Status: \$STATUS, Health: \$HEALTH (\$i/60)"
+                        
+                        if [ "\$STATUS" = "exited" ] || [ "\$STATUS" = "dead" ]; then
+                             echo "Container crashed!"
+                             echo "=== Container Logs ==="
+                             docker logs \$CONTAINER_ID
+                             exit 1
+                        fi
+
                         if [ "\$HEALTH" = "healthy" ]; then
                             echo "Application is UP and HEALTHY!"
                             exit 0
