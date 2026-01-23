@@ -10,7 +10,7 @@ services:
             start_period: 10s
             timeout: 3s
         environment:
-            ADMIN_PASSWORD: Password1!
+            ADMIN_PASSWORD: Password1234!
             DATABASE_ENDPOINT: postgres://mendix:mendix@db:5432/mendix
             # - MXRUNTIME_License_SubscriptionSecret=<subscriptionsecret>
             # - MXRUNTIME_License_UseLicenseServer=true
