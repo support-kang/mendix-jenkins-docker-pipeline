@@ -191,13 +191,13 @@ pipeline {
         failure {
             script {
                 echo 'Pipeline failed! Cleaning up...'
-                sh 'docker compose -f docker-buildpack/tests/docker-compose-postgres.yml down'
+                sh 'docker compose -f docker-buildpack/tests/docker-compose-postgres.yml down -v'
             }
         }
         aborted {
             script {
                 echo 'Pipeline aborted! Cleaning up...'
-                sh 'docker compose -f docker-buildpack/tests/docker-compose-postgres.yml down'
+                sh 'docker compose -f docker-buildpack/tests/docker-compose-postgres.yml down -v'
             }
         }
     }
