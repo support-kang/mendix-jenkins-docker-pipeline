@@ -44,6 +44,8 @@ pipeline {
             steps {
                 script {
                     echo 'Copying MDA file from source directory to docker-buildpack context...'
+                    // 권한 문제 방지를 위해 기존 파일이 있다면 삭제
+                    sh 'rm -f docker-buildpack/app.mda'
                     sh 'cp build-source/*.mda docker-buildpack/app.mda'
                 }
             }
@@ -71,8 +73,8 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying application stack...'
-                    // docker-compose가 APP_IMAGE 환경변수를 참조하도록 함
-                    sh 'docker compose -f docker-buildpack/tests/docker-compose-postgres.yml up -d'
+                    // docker-compose (v1) 사용 (docker compose v2가 지원되지 않는 환경 대응)
+                    sh 'docker-compose -f docker-buildpack/tests/docker-compose-postgres.yml up -d'
                     
                     echo 'Waiting for application to start...'
                     sleep 30
@@ -86,7 +88,6 @@ pipeline {
                 script {
                     echo 'Verifying application health...'
                     // 간단한 Health Check (메인 페이지 호출)
-                    // 실패 시 파이프라인이 중단되도록 retry 및 timeout 적용 가능
                     sh """
                     for i in {1..10}; do
                         if curl -s -f http://localhost:8080 > /dev/null; then
@@ -109,8 +110,8 @@ pipeline {
         always {
             script {
                 echo 'Cleaning up...'
-                // 테스트 종료 후 컨테이너 정리
-                sh 'docker compose -f docker-buildpack/tests/docker-compose-postgres.yml down'
+                // 테스트 종료 후 컨테이너 정리 (docker-compose v1 사용)
+                sh 'docker-compose -f docker-buildpack/tests/docker-compose-postgres.yml down'
                 
                 // 오래된/사용하지 않는 이미지 정리 (선택 사항)
                 // sh 'docker image prune -f' 
