@@ -88,7 +88,7 @@ pipeline {
                     echo "Args: ${buildArgs}"
 
                     // 최종 Docker Build 수행
-                    sh "docker build ${buildArgs} -t ${APP_IMAGE} ${buildContext}"
+sh "docker build ${buildArgs} -t ${APP_IMAGE} -t mendix-app:latest ${buildContext}"
                 }
             }
         }
