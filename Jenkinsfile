@@ -31,6 +31,8 @@ pipeline {
                         // mendix-rootfs:builder 이미지 확인
                         if (sh(script: "docker images -q mendix-rootfs:builder", returnStdout: true).trim().isEmpty()) {
                             echo 'Building RootFS Builder Image...'
+                            // build-cache 디렉토리 생성 (Docker COPY 오류 방지)
+                            sh 'mkdir -p build-cache'
                             sh 'docker build -t mendix-rootfs:builder -f rootfs-builder.dockerfile .'
                         } else {
                             echo 'RootFS Builder Image already exists. Skipping build.'
