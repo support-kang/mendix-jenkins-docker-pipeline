@@ -1,0 +1,89 @@
+//
+// DISCLAIMER:
+// Do not change this file because it is core styling.
+// Customizing core files will make updating Atlas much more difficult in the future.
+// To customize any core styling, copy the part you want to customize to styles/web/sass/app/ so the core styling is overwritten.
+//
+
+@mixin table() {
+    /* ==========================================================================
+       Table
+
+       Default Mendix table widget. Tables can be used to lend structure to a page. They contain a number of rows (tr) and columns, the intersection of which is called a cell (td). Each cell can contain widgets
+    ========================================================================== */
+
+    th {
+        font-weight: var(--font-weight-bold);
+    }
+
+    html body .mx-page table.mx-table {
+        th,
+        td {
+            &.nopadding {
+                padding: 0;
+            }
+        }
+    }
+
+    table.mx-table {
+        > tbody {
+            /* Table row */
+            > tr {
+                /* Table header */
+                > th {
+                    padding: var(--padding-table-cell-top) var(--padding-table-cell-right)
+                        var(--padding-table-cell-bottom) var(--padding-table-cell-left);
+
+                    s * {
+                        color: var(--form-label-color);
+                        font-weight: var(--font-weight-bold);
+                        font-weight: var(--form-label-weight);
+                    }
+
+                    > label {
+                        padding-top: 8px;
+                        padding-bottom: 6px; // Aligns label in the middle if there is no input field next to it.
+                    }
+                }
+
+                /* Table cells */
+                > td {
+                    padding: var(--padding-table-cell-top) var(--padding-table-cell-right)
+                        var(--padding-table-cell-bottom) var(--padding-table-cell-left);
+
+                    > div > label,
+                    .mx-referenceselector-input-wrapper label {
+                        padding-top: 8px;
+                        padding-bottom: 6px; // Aligns label in the middle if there is no input field next to it.
+                    }
+                }
+            }
+        }
+    }
+
+    // Default Mendix Table Widget inside TemplateGrid
+    .mx-templategrid table.mx-table {
+        > tbody {
+            > tr {
+                > th,
+                > td {
+                    padding: var(--padding-table-cell-top) var(--padding-table-cell-right)
+                        var(--padding-table-cell-bottom) var(--padding-table-cell-left);
+                }
+            }
+        }
+    }
+
+    // Default Mendix Table Widget inside Listview
+    .mx-list table.mx-table {
+        > tbody {
+            > tr {
+                > th,
+                > td {
+                    padding: var(--padding-table-cell-top) var(--padding-table-cell-right)
+                        var(--padding-table-cell-bottom) var(--padding-table-cell-left);
+                }
+            }
+        }
+    }
+}

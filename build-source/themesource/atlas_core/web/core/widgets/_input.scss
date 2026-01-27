@@ -1,0 +1,315 @@
+//
+// DISCLAIMER:
+// Do not change this file because it is core styling.
+// Customizing core files will make updating Atlas much more difficult in the future.
+// To customize any core styling, copy the part you want to customize to styles/web/sass/app/ so the core styling is overwritten.
+//
+
+@mixin input() {
+    /* ==========================================================================
+       Input
+
+       The form-control class style all inputs
+    ========================================================================== */
+    .form-control {
+        display: flex;
+        flex: 1;
+        min-width: 50px;
+        height: var(--form-input-height);
+        padding: var(--form-input-padding-y) var(--form-input-padding-x);
+        transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+        color: var(--form-input-color);
+        border: var(--border-width-default) solid var(--form-input-border-color);
+        border-radius: var(--form-input-border-radius);
+        background-color: var(--form-input-bg);
+        background-image: none;
+        box-shadow: none;
+        font-size: var(--form-input-font-size);
+        line-height: var(--form-input-line-height);
+        appearance: none;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+        @if $form-input-style==lined {
+            @extend .form-control-lined;
+        }
+
+        &::placeholder {
+            color: var(--form-input-placeholder-color);
+        }
+    }
+
+    .form-control:not([readonly]) {
+        &:focus,
+        &:focus-within {
+            background-color: var(--form-input-bg-focus);
+            box-shadow: none;
+            @extend .focus-ring !optional;
+        }
+        &:hover:not(:focus):not([disabled]) {
+            border-color: var(--form-input-border-hover-color);
+            background-color: var(--form-input-bg-hover);
+        }
+    }
+
+    .form-control[disabled],
+    .form-control[readonly],
+    fieldset[disabled] .form-control {
+        opacity: 1;
+        background-color: var(--form-input-bg-disabled);
+    }
+
+    .form-control[disabled],
+    fieldset[disabled] .form-control {
+        cursor: not-allowed;
+    }
+
+    // Lined
+    .form-control-lined {
+        border: 0;
+        border-bottom: var(--border-width-default) solid var(--form-input-border-color);
+        border-radius: 0;
+        background-color: transparent;
+
+        &:focus {
+            background-color: transparent;
+        }
+    }
+
+    // Read only form control class
+    .form-control-static {
+        overflow: hidden;
+        flex: 1;
+        min-height: auto;
+        padding: var(--form-input-static-padding-y) var(--form-input-static-padding-x);
+        font-size: var(--form-input-font-size);
+        line-height: var(--form-input-line-height);
+
+        & + .control-label {
+            margin-left: var(--form-label-gutter);
+        }
+    }
+
+    // Dropdown input widget
+    select.form-control {
+        $arrow: "resources/arrow.svg";
+        padding-right: 30px;
+        background-image: url($arrow);
+        background-repeat: no-repeat;
+        background-position: calc(100% - var(--form-input-padding-x)) center;
+        appearance: none;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .form-control.mx-selectbox {
+        align-items: center;
+        flex-direction: row-reverse;
+        justify-content: space-between;
+    }
+
+    // Not editable textarea, textarea will be rendered as a label
+    .mx-textarea .control-label {
+        height: auto;
+    }
+
+    .mx-textarea-counter {
+        display: block;
+        width: 100%;
+        text-align: right;
+        margin-top: var(--spacing-small);
+    }
+
+    textarea.form-control {
+        flex-basis: auto;
+    }
+
+    .mx-compound-control {
+        display: flex;
+        flex: 1;
+        flex-wrap: wrap;
+        max-width: 100%;
+        align-items: center;
+
+        .btn {
+            margin-left: var(--spacing-small);
+        }
+
+        .mx-validation-message {
+            flex-basis: 100%;
+            margin-top: 4px;
+        }
+    }
+
+    .has-error .mx-validation-message {
+        margin-top: var(--spacing-small);
+        margin-bottom: 0;
+        padding: var(--spacing-small);
+        color: var(--alert-danger-color);
+        border-color: var(--alert-danger-border-color);
+        background-color: var(--alert-danger-bg);
+    }
+
+    // Form Group
+    .form-group {
+        display: flex;
+        flex-direction: row;
+        margin-bottom: var(--form-group-margin-bottom);
+
+        & > div[class*="col-"] {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        // Alignment content
+        div[class*="textBox"] > .control-label,
+        div[class*="textArea"] > .control-label,
+        div[class*="datePicker"] > .control-label {
+            @extend .form-control-static;
+        }
+
+        // Label
+        .control-label {
+            overflow: hidden;
+            margin-bottom: 4px;
+            text-align: left;
+            text-overflow: ellipsis;
+            color: var(--form-label-color);
+            font-size: var(--form-label-size);
+            font-weight: var(--form-label-weight);
+        }
+
+        .mx-validation-message {
+            flex-basis: 100%;
+        }
+
+        &.no-columns:not(.label-after) {
+            flex-direction: column;
+        }
+    }
+
+    .page-form-vertical {
+        @extend .form-vertical;
+        .form-group:not(.label-after) {
+            flex-direction: column;
+        }
+    }
+
+    .page-form-horizontal {
+        @extend .form-horizontal;
+        @media not screen and (max-width: $screen-sm-max) {
+            .form-group.no-columns:not(.label-after){
+                // overwrite default no-columns behavior when
+                // page form orientation is set to horizontal
+                flex-direction: row;
+            }
+        }
+
+        $label-breakpoints: sm, md, lg, xl, xxl;
+        @each $bp in $label-breakpoints {
+            &:not([class*="form-label-width-"]){
+                // default label width 3 if none specified
+                .form-group > label {
+                    @extend .col-#{$bp}-3;
+                }
+            }
+            @for $i from 1 through 11 {
+                &.form-label-width-#{$i} {
+                    .form-group > label {
+                        @extend .col-#{$bp}-#{$i};
+                    }
+                }
+            }
+        }
+    }
+
+    .form-group.label-after {
+        .form-control-static {
+            flex: unset;
+        }
+
+        .control-label {
+            margin-bottom: 0;
+        }
+    }
+
+    .mx-dateinput,
+    .mx-referenceselector,
+    .mx-referencesetselector {
+        flex: 1;
+    }
+
+    // Targets only webkit iOS devices
+    .dj_webkit.dj_ios .form-control {
+        transform: translate3d(0,0,0);
+        -webkit-transform: translate3d(0,0,0);
+
+        &.widget-dropdown-filter{
+            transform: inherit;
+            -webkit-transform: inherit;
+        }
+    }
+
+    @media only screen and (min-width: $screen-md) {
+        .form-horizontal {
+            .control-label {
+                margin-bottom: 0;
+                padding-top: var(--form-input-padding-y);
+                padding-bottom: var(--form-input-padding-y);
+                padding-right: var(--form-label-gutter);
+                line-height: var(--form-input-line-height);
+            }
+        }
+    }
+
+    @media only screen and (max-width: $screen-sm-max) {
+        .form-group {
+            flex-direction: column;
+        }
+    }
+
+    @media only screen and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 0) {
+        // Fixes alignment bug on iPads / iPhones where datefield is not aligned vertically
+        input[type="date"],
+        input[type="time"],
+        input[type="datetime-local"],
+        input[type="month"] {
+            line-height: 1;
+        }
+        // Fix shrinking of date inputs because inability of setting a placeholder
+        input[type="time"]:not(.has-value):before,
+        input[type="date"]:not(.has-value):before,
+        input[type="month"]:not(.has-value):before,
+        input[type="datetime-local"]:not(.has-value):before {
+            margin-right: 0.5em;
+            content: attr(placeholder) !important;
+            color: #aaaaaa;
+        }
+        input[type="time"].has-value:before,
+        input[type="date"].has-value:before,
+        input[type="month"].has-value:before,
+        input[type="datetime-local"].has-value:before {
+            content: "" !important;
+        }
+    }
+
+    @media (-ms-high-contrast: none), (-ms-high-contrast: active) {
+        // Target IE10+
+        .form-group {
+            display: block;
+        }
+    }
+
+    [dir="rtl"] {
+        // Dropdown input widget
+        select.form-control {
+            padding-right: 30px;
+            padding-left: 0;
+            background-position: var(--form-input-padding-x) center;
+        }
+
+        .mx-compound-control .btn {
+            margin-right: var(--spacing-small);
+            margin-left: 0;
+        }
+    }
+}

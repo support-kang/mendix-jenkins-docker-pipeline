@@ -1,0 +1,155 @@
+/* ==========================================================================
+   Atlas layout
+
+   The core stucture of all atlas layouts
+========================================================================== */
+@mixin layout-atlas() {
+    .layout-atlas {
+        // Toggle button
+        .toggle-btn {
+            & > img,
+            & > .glyphicon,
+            & > .mx-icon-lined,
+            & > .mx-icon-filled {
+                margin: 0;
+            }
+        }
+        .toggle-btn > .mx-icon-lined {
+            font-family: "Atlas_Core$Atlas";
+        }
+
+        .toggle-btn > .mx-icon-filled {
+            font-family: "Atlas_Core$Atlas_Filled";
+        }
+
+        .mx-scrollcontainer-open {
+            .expand-btn > img {
+                transform: rotate(180deg);
+            }
+        }
+
+        // Sidebar
+        .region-sidebar {
+            background: var(--navsidebar-bg);
+            @if not $use-modern-client {
+                z-index: 101;
+            }
+            box-shadow: var(--navsidebar-shadow);
+            border-right: var(--navsidebar-border-right);
+
+            .mx-scrollcontainer-wrapper {
+                display: flex;
+                flex-direction: column;
+                padding: var(--spacing-small) 0;
+            }
+
+            .mx-navigationtree .navbar-inner > ul > li > a {
+                padding: var(--spacing-medium);
+
+                .glyphicon,
+                .mx-icon-lined,
+                .mx-icon-filled {
+                    margin-right: var(--spacing-small);
+                }
+            }
+
+            .toggle-btn {
+                margin-right: var(--spacing-small);
+                border-color: transparent;
+                border-radius: 0;
+                background: transparent;
+                padding: var(--spacing-medium);
+            }
+        }
+
+        // Topbar
+        .region-topbar {
+            position: relative;
+            align-content: center;
+            z-index: 60; // Show dropshadow
+            min-height: var(--topbar-minimalheight);
+            background: var(--navtopbar-bg);
+            border-bottom: var(--navtopbar-border-bottom);
+
+            // allow secondary color for different type of navbar
+            &.topbar-secondary{
+                background: var(--navtopbar-bg-secondary, --navtopbar-bg);
+            }
+
+            // Topbar Content
+            .topbar-content {
+                display: flex;
+                align-items: center;
+                min-height: var(--topbar-minimalheight);
+            }
+
+            // Toggle btn
+            .toggle-btn {
+                padding: 0;
+                border-color: transparent;
+                border-radius: 0;
+                background: transparent;
+            }
+
+            // For your company, product, or project name
+            .navbar-brand {
+                display: inline-block;
+                float: none; // reset bootstrap
+                height: auto;
+                padding: 0;
+                line-height: inherit;
+                font-size: 16px;
+                margin-right: var(--spacing-small);
+
+                img {
+                    display: inline-block;
+                    margin-right: var(--spacing-small);
+                    @if $brand-logo !=false {
+                        width: 0;
+                        height: 0;
+                        padding: calc(var(--brand-logo-height / 2)) calc(var(--brand-logo-width / 2));
+                        background-image: url(var($brand-logo));
+                        background-repeat: no-repeat;
+                        background-position: left center;
+                        background-size: var(--brand-logo-width);
+                    } @else {
+                        width: auto;
+                        height: var(--brand-logo-height);
+                    }
+                }
+
+                a {
+                    color: var(--navbar-brand-name);
+                    font-size: var(--navtopbar-font-size);
+
+                    &:hover,
+                    &:focus {
+                        text-decoration: none;
+                    }
+                }
+            }
+
+            .mx-navbar {
+                vertical-align: middle;
+                background: transparent;
+                justify-content: center;
+                align-items: center;
+
+                & > .mx-navbar-item {
+                    & > a {
+                        margin-top: 5px;
+                        padding: 0 20px;
+                    }
+                }
+            }
+        }
+
+        @if (not $use-modern-client) {
+            .mx-scrollcontainer-slide {
+                &:not(.mx-scrollcontainer-open) > .region-sidebar {
+                    overflow: hidden;
+                }
+            }
+        }
+    }
+}

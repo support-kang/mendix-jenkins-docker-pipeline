@@ -1,0 +1,108 @@
+//
+// DISCLAIMER:
+// Do not change this file because it is core styling.
+// Customizing core files will make updating Atlas much more difficult in the future.
+// To customize any core styling, copy the part you want to customize to styles/web/sass/app/ so the core styling is overwritten.
+//
+
+@mixin button() {
+    /* ==========================================================================
+       Button
+
+       Default Bootstrap and Mendix button
+    ========================================================================== */
+
+    .btn,
+    .mx-button {
+        display: inline-block;
+        margin-bottom: 0;
+        padding: 0.6em 1em;
+        cursor: pointer;
+        -webkit-user-select: none;
+        user-select: none;
+        transition: all 0.2s ease-in-out;
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+        color: var(--btn-default-color);
+        border: var(--border-width-default) solid var(--btn-default-border-color);
+        border-radius: var(--btn-border-radius);
+        background-color: var(--btn-default-bg);
+        background-image: none;
+        box-shadow: none;
+        text-shadow: none;
+        font-size: var(--btn-font-size);
+        line-height: var(--line-height-base);
+
+        &:hover {
+            // border-color: var(--form-input-border-hover-color);
+            outline: none;
+            box-shadow: none;
+        }
+        &:active {
+            outline: none;
+            box-shadow: none;
+        }
+        &:focus-visible {
+            @extend .focus-ring !optional;
+        }
+
+        &[aria-disabled] {
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.65;
+        }
+
+        @if $btn-bordered != false {
+            @extend .btn-bordered;
+        }
+    }
+
+    // Mendix button link
+    .mx-link {
+        padding: 0;
+        color: var(--link-color);
+
+        &[aria-disabled="true"] {
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.65;
+        }
+        &:focus-visible {
+            @extend .focus-ring !optional;
+        }
+    }
+
+    .link-back {
+        color: var(--font-color-detail);
+
+        .glyphicon,
+        .mx-icon-lined,
+        .mx-icon-filled {
+            top: 2px;
+        }
+    }
+
+    // Images and icons in buttons
+    .btn,
+    .mx-button,
+    .mx-link {
+        img {
+            //height: auto; // MXUI override who set the height on 16px default
+            height: calc(var(--font-size-default) + 4px);
+            margin-right: 4px;
+            vertical-align: text-top;
+        }
+    }
+
+    //== Phone specific
+    //-------------------------------------------------------------------------------------------------------------------//
+    .profile-phone {
+        .btn,
+        .mx-link {
+            &:active {
+                transform: translateY(1px);
+            }
+        }
+    }
+}

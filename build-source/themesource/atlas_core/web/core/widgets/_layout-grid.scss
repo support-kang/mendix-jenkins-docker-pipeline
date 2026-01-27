@@ -1,0 +1,206 @@
+//
+// DISCLAIMER:
+// Do not change this file because it is core styling.
+// Customizing core files will make updating Atlas much more difficult in the future.
+// To customize any core styling, copy the part you want to customize to styles/web/sass/app/ so the core styling is overwritten.
+//
+@mixin layout-grid() {
+    :root {
+        --max-screen-width: var(--screen-xxl);
+    }
+
+    /* ==========================================================================
+       Layout grid
+
+       Default Bootstrap containers
+    ========================================================================== */
+    .mx-layoutgrid {
+        width: 100%;
+        margin-right: auto;
+        margin-left: auto;
+        display: flex;
+        flex-direction: column;
+        row-gap: var(--layoutgrid-row-gap);
+        --layoutgrid-column-bg: transparent;
+        --layoutgrid-column-gap: var(--gutter-size);
+        --layoutgrid-row-gap: var(--gutter-size);
+        --layoutgrid-column-border-radius: var(--border-radius-l);
+
+        &.cards {
+            // default column & row gap for card style
+            --layoutgrid-row-gap: var(--gutter-size);
+            --layoutgrid-column-gap: var(--gutter-size);
+            --layoutgrid-column-bg: var(--bg-color-secondary);
+            --card-bg-color: var(--layoutgrid-column-bg);
+            --card-border-radius: var(--layoutgrid-column-border-radius);
+
+            > .row {
+                > .col,
+                > [class*="col-"] {
+                    @extend .card;
+                }
+            }
+        }
+
+        &.card-grid {
+            @extend .card;
+            --layoutgrid-row-gap: 0px;
+            --layoutgrid-column-gap: 0px;
+            --card-bg-color: var(--layoutgrid-column-bg);
+            --card-border-radius: var(--layoutgrid-column-border-radius);
+            padding: 0;
+
+            > .row{
+                margin-left: 0;
+                margin-right: 0;
+                > [class*="col-"]{
+                    border: 0.5px solid var(--border-color-default);
+                    padding: var(--card-padding);
+                }
+                &:not(:last-child){
+                    border-bottom: 0.5px solid var(--border-color-default);
+                }
+            }
+        }
+
+        &.layoutgrid-align-stretch {
+            height: 100%;
+            > .row {
+                height: 100%;
+            }
+        }
+
+        &.layoutgrid-align-top {
+            height: 100%;
+            justify-content: flex-start;
+        }
+
+        &.layoutgrid-align-center {
+            height: 100%;
+            justify-content: center;
+        }
+
+        &.layoutgrid-align-bottom {
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        > .row {
+            display: flex;
+            column-gap: var(--layoutgrid-column-gap);
+            row-gap: var(--layoutgrid-row-gap); // wrapped items
+            > .col,
+            > [class*="col-"] {
+                --column-gap: var(--layoutgrid-column-gap);
+                background-color: var(--layoutgrid-column-bg);
+                &.card {
+                    --layoutgrid-column-bg: var(--card-bg);
+                }
+
+                >* {
+                    // ensure column gap is scoped to layout grid columns
+                    --column-gap: 0px;
+                }
+            }
+
+            &.cards {
+                >.col,
+                >[class*="col-"] {
+                    @extend .card;
+                    background-color: var(--layoutgrid-column-bg);
+                }
+            }
+        }
+    }
+
+    // Row
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+
+        &::before,
+        &::after {
+            content: normal;
+        }
+    }
+
+    .no-gutters {
+        margin-right: 0;
+        margin-left: 0;
+        --layoutgrid-column-gap: 0px;
+    }
+
+    .no-gutters > .col,
+    .no-gutters > [class*="col-"] {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    // Columns
+    .col,
+    [class^="col-"] {
+        position: relative;
+        width: 100%;
+    }
+
+    // Responsiveness
+    $breakpoints: (
+        "" "" 0 0,
+        "sm" "-sm" $screen-sm,
+        "md" "-md" $screen-md,
+        "lg" "-lg" $screen-lg,
+        "xl" "-xl" $screen-xl,
+        "xxl" "-xxl" $screen-xxl
+    );
+
+    @each $size, $suffix, $max-width in $breakpoints {
+        @media (min-width: #{$max-width}) {
+            @if $size != "" {
+                .mx-layoutgrid-fixed {
+                    max-width: calc(min(var(--max-screen-width), #{$max-width}) - 40px);
+                }
+            }
+
+            .col#{$suffix} {
+                flex-grow: 1;
+                flex-basis: 0;
+                max-width: 100%;
+            }
+
+            .col#{$suffix}-auto {
+                flex: 0 0 auto;
+                width: auto;
+                max-width: 100%;
+            }
+
+            @for $i from 1 through 12 {
+                .col#{$suffix}-#{$i} {
+                    $col: calc(12 / #{$i});
+                $width: calc(100% / $col - var(--column-gap) / $col * ($col - 1));
+                    flex: 0 0 $width;
+                    max-width: $width;
+                }
+            }
+
+            .order#{$suffix}-first {
+                order: -1;
+            }
+            .order#{$suffix}-last {
+                order: 13;
+            }
+
+            @for $i from 0 through 12 {
+                .order#{$suffix}-#{$i} {
+                    order: #{$i};
+                }
+            }
+
+            @for $i from 0 through 11 {
+                .offset#{$suffix}-#{$i},
+                .col#{$suffix}-offset-#{$i} {
+                    margin-left: calc(100% * #{$i} / 12);
+                }
+            }
+        }
+    }
+}

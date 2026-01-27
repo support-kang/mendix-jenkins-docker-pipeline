@@ -1,0 +1,136 @@
+//
+// DISCLAIMER:
+// Do not change this file because it is core styling.
+// Customizing core files will make updating Atlas much more difficult in the future.
+// To customize any core styling, copy the part you want to customize to styles/web/sass/app/ so the core styling is overwritten.
+//
+
+@mixin group-box-helpers() {
+    /* ==========================================================================
+       Group box
+
+    //== Design Properties
+    //## Helper classes to change the look and feel of the component
+    ========================================================================== */
+    // Color variations
+    .groupbox-secondary,
+    .groupbox-default {
+        @include groupbox-variant(var(--groupbox-default-color), var(--groupbox-default-bg));
+    }
+
+    .groupbox-primary {
+        @include groupbox-variant(var(--groupbox-primary-color), var(--groupbox-primary-bg));
+    }
+
+    // Success appears as green
+    .groupbox-success {
+        @include groupbox-variant(var(--groupbox-success-color), var(--groupbox-success-bg));
+    }
+
+    // Warning appears as orange
+    .groupbox-warning {
+        @include groupbox-variant(var(--groupbox-warning-color), var(--groupbox-warning-bg));
+    }
+
+    // Danger and error appear as red
+    .groupbox-danger {
+        @include groupbox-variant(var(--groupbox-danger-color), var(--groupbox-danger-bg));
+    }
+
+    .groupbox-transparent {
+        > .mx-groupbox-header {
+            padding: calc(var(--spacing-small) * 1.5) 0;
+            color: var(--gray-900);
+            border-style: none;
+            background: transparent;
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .mx-groupbox-body {
+            padding: var(--spacing-small) 0;
+            border-radius: 0;
+            border: 0;
+            border-bottom: 1px solid var(--groupbox-default-bg);
+            background-color: transparent;
+        }
+
+        .mx-groupbox-collapse-icon {
+            color: var(--brand-primary);
+        }
+    }
+
+    // Callout Look and Feel
+    .groupbox-callout {
+        > .mx-groupbox-header,
+        > .mx-groupbox-body {
+            border: 0;
+            background-color: var(--callout-primary-bg);
+        }
+
+        > .mx-groupbox-header {
+            color: var(--callout-primary-color);
+        }
+
+        .mx-groupbox-header + .mx-groupbox-body {
+            padding-top: 0;
+        }
+    }
+
+    .groupbox-success.groupbox-callout {
+        > .mx-groupbox-header,
+        > .mx-groupbox-body {
+            background-color: var(--callout-success-bg);
+        }
+
+        > .mx-groupbox-header {
+            color: var(--callout-success-color);
+        }
+    }
+
+    .groupbox-warning.groupbox-callout {
+        > .mx-groupbox-header,
+        > .mx-groupbox-body {
+            background-color: var(--callout-warning-bg);
+        }
+
+        > .mx-groupbox-header {
+            color: var(--callout-warning-color);
+        }
+    }
+
+    .groupbox-danger.groupbox-callout {
+        > .mx-groupbox-header,
+        > .mx-groupbox-body {
+            background-color: var(--callout-danger-bg);
+        }
+
+        > .mx-groupbox-header {
+            color: var(--callout-danger-color);
+        }
+    }
+
+    //Bootstrap variations
+
+    .groupbox-info {
+        @include groupbox-variant(var(--groupbox-info-color), var(--groupbox-info-bg));
+    }
+
+    .groupbox-inverse {
+        @include groupbox-variant(var(--groupbox-inverse-color), var(--groupbox-inverse-bg));
+    }
+
+    .groupbox-white {
+        @include groupbox-variant(var(--groupbox-white-color), var(--groupbox-white-bg));
+    }
+
+    .groupbox-info.groupbox-callout {
+        > .mx-groupbox-header,
+        > .mx-groupbox-body {
+            background-color: var(--callout-info-bg);
+        }
+
+        > .mx-groupbox-header {
+            color: var(--callout-info-color);
+        }
+    }
+}
