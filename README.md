@@ -95,7 +95,10 @@ docker run -d -p 8082:8080 -p 50000:50000 --name jenkins `
 3.  **파이프라인 실행**:
     *   젠킨스에서 'New Item' -> 'Pipeline'을 생성합니다.
     *   'Pipeline script from SCM'을 선택하고 Git 리포지토리를 연결합니다.
-    *   'Build Now'를 클릭하여 배포를 시작합니다.
+    *   **Script Path 설정**:
+        *   **Docker Compose 배포**: `Jenkinsfile` (기본값)
+        *   **Kubernetes 배포**: `Jenkinsfile.k8s`
+    *   'Build Now'를 클릭하여 배포를 시작합니다. (빌드 시 `mendix-app:latest` 태그가 함께 생성됩니다.)
 
 ---
 
@@ -213,12 +216,27 @@ Git의 대용량 파일 확장 기능을 사용하여 `.mda` 파일을 버전 �
 
 ## 🔒 폐쇄망(Air-gapped) 환경 가이드
 
-인터넷이 없는 환경에서는 외부에서 빌드된 이미지를 반입하여 배포하는 것을 권장합니다.
+인터넷이 없는 환경에서는 두 가지 전략을 사용할 수 있습니다.
 
-### 추천 전략: 외부 빌드 후 이미지 반입 (Build Outside)
+### 전략 1: 외부 빌드 후 이미지 반입 (Build Outside) - 추천
 1.  **외부망**: 소스를 빌드하여 `mendix-app` 이미지를 생성 후 파일로 저장 (`docker save`).
 2.  **내부망**: 이미지 파일을 로드하고 `docker-compose up`으로 실행.
-(상세 내용은 이전 가이드 참조)
+
+### 전략 2: 내부 빌드 (Build Inside) - 의존성 오프라인 준비
+폐쇄망 내부에서 빌드해야 한다면, 필요한 의존성을 미리 다운로드해야 합니다.
+
+1.  **의존성 다운로드 (외부망)**
+    스크립트를 실행하여 Buildpack과 Mendix Runtime을 캐시 폴더에 다운로드합니다.
+    ```bash
+    # .mpr 파일에서 버전을 자동 감지하여 다운로드
+    python3 scripts/download_offline_deps.py --source build-source
+    ```
+
+2.  **파일 이동**
+    `docker-buildpack/build-cache` 폴더를 폐쇄망 환경의 프로젝트 경로로 그대로 복사합니다.
+
+3.  **빌드**
+    Dockerfile이 `build-cache` 폴더를 감지하면 자동으로 로컬 파일을 사용하여 빌드합니다.
 
 ---
 ---
@@ -304,7 +322,10 @@ docker run -d -p 8080:8080 -p 50000:50000 --name jenkins \
 3.  **Run Pipeline**:
     *   Create a new Pipeline job in Jenkins.
     *   Connect your Git repository.
-    *   Click 'Build Now'.
+    *   **Set Script Path**:
+        *   **Docker Compose Deployment**: `Jenkinsfile` (Default)
+        *   **Kubernetes Deployment**: `Jenkinsfile.k8s`
+    *   Click 'Build Now'. (The image will be strictly tagged as `mendix-app:latest`.)
 
 ---
 
@@ -417,26 +438,22 @@ Manually copy the file to the `build-source` folder in the Jenkins workspace.
 
 ---
 
-## 🔒 Air-gapped Environment Setup (폐쇄망 환경 준비)
+
+## 🔒 Air-gapped Environment Setup
 
 In air-gapped environments, you cannot download dependencies during the build.
-폐쇄망 환경에서는 빌드 중 외부 다운로드가 불가능하므로 사전에 준비해야 합니다.
 
-### 1. Download Dependencies (Online) / 의존성 다운로드
+### 1. Download Dependencies (Online)
 Run the script to download Buildpack and Runtime to `docker-buildpack/build-cache`.
-스크립트를 실행하여 Buildpack과 Mendix Runtime을 캐시 폴더에 다운로드합니다.
 
 ```bash
 # Auto-detect version from .mpr and download
-# .mpr 파일에서 버전을 자동 감지하여 다운로드
 python3 scripts/download_offline_deps.py --source build-source
 ```
 
-### 2. Transfer Files / 파일 이동
+### 2. Transfer Files
 Copy the `docker-buildpack/build-cache` directory to the same location in your offline environment.
-`docker-buildpack/build-cache` 폴더를 폐쇄망 환경의 프로젝트 경로로 그대로 복사합니다.
 
-### 3. Build / 빌드
+### 3. Build
 The Dockerfile detects the `build-cache` folder and uses local files automatically.
-Dockerfile이 `build-cache` 폴더를 감지하면 자동으로 로컬 파일을 사용하여 빌드합니다.
 

@@ -1,0 +1,143 @@
+pipeline {
+    agent any
+
+    environment {
+        // 1. 버전 관리 (빌드 번호 사용)
+        // 기본값은 mendix-app:build-X 형식이 됨
+        APP_IMAGE = "mendix-app:build-${env.BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        // 2. 빌드 속도 최적화 (Conditional Build)
+        // 이미지가 존재하면 빌드를 건너뜀
+        stage('Build Base Images') {
+            steps {
+                script {
+                    dir('docker-buildpack') {
+                        // mendix-rootfs:app 이미지 확인
+                        if (sh(script: "docker images -q mendix-rootfs:app", returnStdout: true).trim().isEmpty()) {
+                            echo 'Building RootFS App Image...'
+                            sh 'docker build -t mendix-rootfs:app -f rootfs-app.dockerfile .'
+                        } else {
+                            echo 'RootFS App Image already exists. Skipping build.'
+                        }
+
+                        // mendix-rootfs:builder 이미지 확인
+                        if (sh(script: "docker images -q mendix-rootfs:builder", returnStdout: true).trim().isEmpty()) {
+                            echo 'Building RootFS Builder Image...'
+                            // build-cache 디렉토리 생성 (Docker COPY 오류 방지)
+                            sh 'mkdir -p build-cache'
+                            sh 'docker build -t mendix-rootfs:builder -f rootfs-builder.dockerfile .'
+                        } else {
+                            echo 'RootFS Builder Image already exists. Skipping build.'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Prepare & Build Logic') {
+            steps {
+                script {
+                    echo 'Determining build strategy...'
+                    
+                    // 기본 빌드 인자 설정
+                    def buildArgs = "--build-arg BUILDER_ROOTFS_IMAGE=mendix-rootfs:builder --build-arg ROOTFS_IMAGE=mendix-rootfs:app"
+                    def buildContext = "docker-buildpack"
+
+                    // 1. MDA 파일 존재 여부 확인
+                    if (sh(script: "ls build-source/*.mda > /dev/null 2>&1", returnStatus: true) == 0) {
+                        echo "Strategy: MDA File Found. Using existing MDA."
+                        
+                        // 기존 MDA 정리 및 복사
+                        sh 'rm -f docker-buildpack/app.mda'
+                        sh 'cp build-source/*.mda docker-buildpack/app.mda'
+                        
+                        // MDA 경로를 빌드 인자로 추가
+                        buildArgs += " --build-arg BUILD_PATH=app.mda"
+                        
+                    } else {
+                        echo "Strategy: No MDA Found. Attempting to build from source using build.py..."
+                        
+                        // 소스 빌드 결과 저장할 디렉토리 정리
+                        sh 'rm -rf docker-buildpack/build-context'
+                        
+                        // build.py 실행 (소스 -> MDA/Project 변환)
+                        // build.py가 내부 'scripts' 폴더를 참조하므로 실행 위치를 docker-buildpack으로 변경해야 함
+                        dir('docker-buildpack') {
+                            sh """
+                            python3 build.py \
+                                --source ../build-source \
+                                --destination build-context \
+                                build-mda-dir
+                            """
+                        }
+                        
+                        // 빌드 컨텍스트 변경
+                        buildContext = "docker-buildpack/build-context"
+                    }
+
+                    echo "Building Final Application Image: ${APP_IMAGE}"
+                    echo "Context: ${buildContext}"
+                    echo "Args: ${buildArgs}"
+
+                    // 최종 Docker Build 수행
+                    sh "docker build ${buildArgs} -t ${APP_IMAGE} -t mendix-app:latest ${buildContext}"
+                }
+            }
+        }
+
+        stage('Deploy to K8s') {
+            steps {
+                script {
+                    echo 'Deploying application stack to Kubernetes...'
+                    
+                    // Kubernetes 매니페스트 적용
+                    // 1. DB 배포
+                    sh 'kubectl apply -f k8s/postgres.yaml'
+                    // 2. App 배포
+                    sh 'kubectl apply -f k8s/mendix-app.yaml'
+                    
+                    echo 'Rolling out restart to pick up new image...'
+                    // 이미지 태그가 latest일 경우 변경사항 감지가 안될 수 있으므로 강제 재시작
+                    sh 'kubectl rollout restart deployment/mendix-app'
+                }
+            }
+        }
+
+        // 3. 통합 테스트 (Verification) - K8s 환경에 맞게 수정 필요할 수 있음. 
+        // 현재는 K8s 배포 후 포드 상태 확인으로 대체하거나 단순히 배포 성공만 확인.
+        // 여기서는 간단히 배포 상태 확인만 수행 (Rollout status)
+        stage('Verification') {
+            steps {
+                script {
+                    echo 'Verifying deployment rollout...'
+                    sh 'kubectl rollout status deployment/mendix-app --timeout=300s'
+                }
+            }
+        }
+    }
+
+    // 4. 디스크 정리 (Cleanup)
+    post {
+        always {
+            script {
+                echo 'Pipeline execution finished.'
+                // 오래된/사용하지 않는 이미지 정리 (선택 사항)
+                sh 'docker image prune -f' 
+            }
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}

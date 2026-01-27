@@ -1,21 +1,21 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: mendix-app
+  name: mendix-app # 서비스 이름 (내부 DNS로 사용됨)
 spec:
-  type: LoadBalancer 
+  type: LoadBalancer # 외부 접속 허용 (로컬/클라우드 환경에 따라 동작 다름)
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: 8080       # 서비스가 노출할 포트
+    targetPort: 8080 # 컨테이너 내부 포트
   selector:
-    app: mendix-app
+    app: mendix-app  # 트래픽을 전달할 파드 선택자
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mendix-app
 spec:
-  replicas: 1
+  replicas: 1 # 실행할 파드 개수
   selector:
     matchLabels:
       app: mendix-app
@@ -26,26 +26,31 @@ spec:
     spec:
       containers:
       - name: mendix-app
-        image: mendix-app:latest
-        imagePullPolicy: IfNotPresent  # Use local image if available (important for Docker Desktop)
+        image: mendix-app:latest # Jenkins에서 빌드한 최신 이미지 사용
+        imagePullPolicy: IfNotPresent  # 로컬 이미지가 있으면 우선 사용 (Docker Desktop/Minikube 로컬 테스트 시 중요)
         ports:
         - containerPort: 8080
         env:
+        # 주의: 실제 운영 환경에서는 Secret을 사용해야 합니다.
         - name: ADMIN_PASSWORD
           value: "Password1234!"
         - name: DATABASE_ENDPOINT
-          value: "postgres://mendix:mendix@db:5432/mendix"
+          value: "postgres://mendix:mendix@db:5432/mendix" # db: postgres Service 이름
         - name: MXRUNTIME_Log_Level
           value: "INFO"
+        
+        # Readiness Probe: 트래픽을 받을 준비가 되었는지 확인 (실패 시 서비스에서 제외)
         readinessProbe:
           httpGet:
             path: /
             port: 8080
-          initialDelaySeconds: 60
+          initialDelaySeconds: 60 # 앱 구동 대기 시간
           periodSeconds: 10
+        
+        # Liveness Probe: 앱이 살아있는지 확인 (실패 시 파드 재시작)
         livenessProbe:
           httpGet:
             path: /
             port: 8080
-          initialDelaySeconds: 120
+          initialDelaySeconds: 120 # 충분한 초기화 시간 부여
           periodSeconds: 20
