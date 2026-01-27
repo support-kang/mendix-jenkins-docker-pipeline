@@ -41,3 +41,6 @@ USER jenkins
 # 6. 플러그인 설치 (폐쇄망 지원을 위해 이미지에 포함)
 COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
+
+# 7. 마지막 실행 권한 (Docker Socket 접근을 위해 root로 실행)
+USER root
