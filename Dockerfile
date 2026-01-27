@@ -40,7 +40,17 @@ USER jenkins
 
 # 6. 플러그인 설치 (폐쇄망 지원을 위해 이미지에 포함)
 COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
-RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
+# 7. 권한 문제 해결을 위한 sudo 래퍼 설정 (root 사용자 전환 대신 깔끔한 방식)
+# jenkins 사용자가 sudo를 통해 docker를 실행하도록 래퍼 스크립트 생성
+# 기존 바이너리를 -real로 변경하고, 원본 위치에 래퍼 배치
+RUN mv /usr/bin/docker /usr/bin/docker-real \
+    && mv /usr/local/bin/docker-compose /usr/local/bin/docker-compose-real \
+    && echo '#!/bin/bash' > /usr/bin/docker \
+    && echo 'sudo /usr/bin/docker-real "$@"' >> /usr/bin/docker \
+    && chmod +x /usr/bin/docker \
+    && echo '#!/bin/bash' > /usr/local/bin/docker-compose \
+    && echo 'sudo /usr/local/bin/docker-compose-real "$@"' >> /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/docker-compose
 
-# 7. 마지막 실행 권한 (Docker Socket 접근을 위해 root로 실행)
-USER root
+# 8. 마지막 실행 권한 (jenkins 사용자로 실행하되 sudo 사용 가능)
+USER jenkins
