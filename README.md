@@ -95,7 +95,10 @@ docker run -d -p 8082:8080 -p 50000:50000 --name jenkins `
 3.  **파이프라인 실행**:
     *   젠킨스에서 'New Item' -> 'Pipeline'을 생성합니다.
     *   'Pipeline script from SCM'을 선택하고 Git 리포지토리를 연결합니다.
-    *   'Build Now'를 클릭하여 배포를 시작합니다.
+    *   **Script Path 설정**:
+        *   **Docker Compose 배포**: `Jenkinsfile` (기본값)
+        *   **Kubernetes 배포**: `Jenkinsfile.k8s`
+    *   'Build Now'를 클릭하여 배포를 시작합니다. (빌드 시 `mendix-app:latest` 태그가 함께 생성됩니다.)
 
 ---
 
@@ -143,7 +146,50 @@ env | grep MXRUNTIME_
 
 ---
 
-## �💾 대용량 MDA 파일 처리 가이드 (Large File Handling)
+## ☸️ 쿠버네티스(Kubernetes) 로컬 테스트 가이드 (Local Testing)
+
+`k8s/` 브랜치 또는 폴더에 포함된 매니페스트를 사용하여 로컬 환경(Minikube, Docker Desktop K8s)에서 테스트할 수 있습니다.
+
+### 1. 사전 준비
+*   **Kubernetes 활성화**: Docker Desktop 설정에서 Kubernetes를 Enable 하거나, Minikube를 설치합니다.
+*   **kubectl 설치**: Kubernetes 클러스터를 제어하기 위한 CLI 도구입니다.
+
+### 2. 이미지 빌드 (로컬)
+로컬 K8s는 로컬 도커 이미지를 바로 사용할 수 있습니다 (imagePullPolicy: IfNotPresent).
+먼저 이미지를 빌드해 둡니다.
+
+```bash
+# Dockerfile이 있는 루트 경로에서 실행
+docker build -t mendix-app:latest .
+```
+
+### 3. 매니페스트 배포
+`k8s/` 폴더의 YAML 파일들을 클러스터에 적용합니다.
+
+```bash
+# 네임스페이스 생성 (선택)
+kubectl create namespace mendix
+
+# 매니페스트 적용 (-n mendix 옵션은 네임스페이스 사용 시)
+kubectl apply -f k8s/postgres.yaml
+kubectl apply -f k8s/metrics-server.yaml # Metrics Server 설치 (HPA 필수)
+kubectl apply -f k8s/mendix-app.yaml
+```
+
+### 4. 확인 및 접속
+```bash
+# 파드 상태 확인
+kubectl get pods
+
+# 서비스(접속 주소) 확인
+kubectl get svc
+```
+*   **Docker Desktop**: `localhost:8080`으로 접속 가능.
+*   **Minikube**: `minikube service mendix-app` 명령어로 URL 확인.
+
+---
+
+## 💾 대용량 MDA 파일 처리 가이드 (Large File Handling)
 Mendix 빌드 아티팩트(`.mda`) 용량이 커서 Git에 올리기 어려운 경우, 다음 방법들을 사용하세요.
 
 ### 1. Git LFS (Large File Storage) 사용 (추천)
@@ -171,12 +217,27 @@ Git의 대용량 파일 확장 기능을 사용하여 `.mda` 파일을 버전 �
 
 ## 🔒 폐쇄망(Air-gapped) 환경 가이드
 
-인터넷이 없는 환경에서는 외부에서 빌드된 이미지를 반입하여 배포하는 것을 권장합니다.
+인터넷이 없는 환경에서는 두 가지 전략을 사용할 수 있습니다.
 
-### 추천 전략: 외부 빌드 후 이미지 반입 (Build Outside)
+### 전략 1: 외부 빌드 후 이미지 반입 (Build Outside) - 추천
 1.  **외부망**: 소스를 빌드하여 `mendix-app` 이미지를 생성 후 파일로 저장 (`docker save`).
 2.  **내부망**: 이미지 파일을 로드하고 `docker-compose up`으로 실행.
-(상세 내용은 이전 가이드 참조)
+
+### 전략 2: 내부 빌드 (Build Inside) - 의존성 오프라인 준비
+폐쇄망 내부에서 빌드해야 한다면, 필요한 의존성을 미리 다운로드해야 합니다.
+
+1.  **의존성 다운로드 (외부망)**
+    스크립트를 실행하여 Buildpack과 Mendix Runtime을 캐시 폴더에 다운로드합니다.
+    ```bash
+    # .mpr 파일에서 버전을 자동 감지하여 다운로드
+    python3 scripts/download_offline_deps.py --source build-source
+    ```
+
+2.  **파일 이동**
+    `docker-buildpack/build-cache` 폴더를 폐쇄망 환경의 프로젝트 경로로 그대로 복사합니다.
+
+3.  **빌드**
+    Dockerfile이 `build-cache` 폴더를 감지하면 자동으로 로컬 파일을 사용하여 빌드합니다.
 
 ---
 ---
@@ -262,7 +323,10 @@ docker run -d -p 8080:8080 -p 50000:50000 --name jenkins \
 3.  **Run Pipeline**:
     *   Create a new Pipeline job in Jenkins.
     *   Connect your Git repository.
-    *   Click 'Build Now'.
+    *   **Set Script Path**:
+        *   **Docker Compose Deployment**: `Jenkinsfile` (Default)
+        *   **Kubernetes Deployment**: `Jenkinsfile.k8s`
+    *   Click 'Build Now'. (The image will be strictly tagged as `mendix-app:latest`.)
 
 ---
 
@@ -310,6 +374,49 @@ env | grep MXRUNTIME_
 
 ---
 
+## ☸️ Kubernetes Local Testing Guide
+
+You can test the deployment locally using Minikube or Docker Desktop Kubernetes with the manifests in the `k8s/` folder.
+
+### 1. Prerequisites
+*   **Enable Kubernetes**: Enable Kubernetes in Docker Desktop settings or install Minikube.
+*   **Install kubectl**: CLI tool for controlling the Kubernetes cluster.
+
+### 2. Build Image (Local)
+Local K8s can use local Docker images (imagePullPolicy: IfNotPresent).
+Build the image first.
+
+```bash
+# Run in the root directory
+docker build -t mendix-app:latest .
+```
+
+### 3. Deploy Manifests
+Apply the YAML files in the `k8s/` folder to your cluster.
+
+```bash
+# Create Namespace (Optional)
+kubectl create namespace mendix
+
+# Apply Manifests
+kubectl apply -f k8s/postgres.yaml
+kubectl apply -f k8s/metrics-server.yaml # Install Metrics Server (Required for HPA)
+kubectl apply -f k8s/mendix-app.yaml
+```
+
+### 4. Verify & Access
+```bash
+# Check Pod Status
+kubectl get pods
+
+# Check Services
+kubectl get svc
+```
+*   **Docker Desktop**: Access via `localhost:8080`.
+*   **Minikube**: Run `minikube service mendix-app` to get the URL.
+
+---
+
 ## 💾 Handling Large MDA Files
 If your `.mda` file is too large for Git, use one of the following methods:
 
@@ -333,9 +440,22 @@ Manually copy the file to the `build-source` folder in the Jenkins workspace.
 
 ---
 
-## 🔒 Air-gapped Environment Guide
-For environments without internet, it is recommended to build images externally and transfer them.
 
-### Strategy: Build Outside, Deploy Inside
-1.  **External**: Build `mendix-app` image and save to file (`docker save`).
-2.  **Internal**: Load image (`docker load`) and run with `docker-compose`.
+## 🔒 Air-gapped Environment Setup
+
+In air-gapped environments, you cannot download dependencies during the build.
+
+### 1. Download Dependencies (Online)
+Run the script to download Buildpack and Runtime to `docker-buildpack/build-cache`.
+
+```bash
+# Auto-detect version from .mpr and download
+python3 scripts/download_offline_deps.py --source build-source
+```
+
+### 2. Transfer Files
+Copy the `docker-buildpack/build-cache` directory to the same location in your offline environment.
+
+### 3. Build
+The Dockerfile detects the `build-cache` folder and uses local files automatically.
+

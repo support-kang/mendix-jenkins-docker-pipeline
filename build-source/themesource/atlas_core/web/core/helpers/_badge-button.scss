@@ -1,0 +1,103 @@
+//
+// DISCLAIMER:
+// Do not change this file because it is core styling.
+// Customizing core files will make updating Atlas much more difficult in the future.
+// To customize any core styling, copy the part you want to customize to styles/web/sass/app/ so the core styling is overwritten.
+//
+
+@mixin badge-button-helpers() {
+    /* ==========================================================================
+       Badge button
+
+       Different background components, all managed by variables
+    ========================================================================== */
+
+    //Badge button color variation
+    .btn-secondary,
+    .btn-default {
+        .badge {
+            color: var(--btn-default-bg);
+            background-color: var(--btn-primary-bg);
+        }
+    }
+
+    .btn-success {
+        .badge {
+            color: var(--btn-success-bg);
+        }
+    }
+
+    .btn-warning {
+        .badge {
+            color: var(--btn-warning-bg);
+        }
+    }
+
+    .btn-danger {
+        .badge {
+            color: var(--btn-danger-bg);
+        }
+    }
+
+    //Badge button bordered variation
+
+    .btn-bordered.btn-primary {
+        .badge {
+            background: var(--btn-primary-bg);
+            color: var(--btn-primary-color);
+        }
+
+        &:hover,
+        &:focus {
+            .badge {
+                background-color: var(--btn-primary-color);
+                color: var(--btn-primary-bg);
+            }
+        }
+    }
+
+    .btn-bordered.btn-success {
+        .badge {
+            background: var(--btn-success-bg);
+            color: var(--btn-success-color);
+        }
+
+        &:hover,
+        &:focus {
+            .badge {
+                background-color: var(--btn-success-color);
+                color: var(--btn-success-bg);
+            }
+        }
+    }
+
+    .btn-bordered.btn-warning {
+        .badge {
+            background: var(--btn-warning-bg);
+            color: var(--btn-warning-color);
+        }
+
+        &:hover,
+        &:focus {
+            .badge {
+                background-color: var(--btn-warning-color);
+                color: var(--btn-warning-bg);
+            }
+        }
+    }
+
+    .btn-bordered.btn-danger {
+        .badge {
+            background: var(--btn-danger-bg);
+            color: var(--btn-danger-color);
+        }
+
+        &:hover,
+        &:focus {
+            .badge {
+                background-color: var(--btn-danger-color);
+                color: var(--btn-danger-bg);
+            }
+        }
+    }
+}

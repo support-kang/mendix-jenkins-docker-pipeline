@@ -41,6 +41,7 @@ COPY scripts/startup.py scripts/vcap_application.json /opt/mendix/build/
 # 6. Create symlink for java prefs used by CF buildpack
 # 7. Update ownership of /opt/mendix so that the app can run as a non-root user
 # 8. Update permissions of /opt/mendix so that the app can run as a non-root user
+COPY build-cache /tmp/buildcache
 RUN mkdir -p /tmp/buildcache/bust /tmp/cf-deps /var/mendix/build /var/mendix/build/.local &&\
     chmod +rx /opt/mendix/buildpack/compilation.py /opt/mendix/buildpack/buildpack/stage.py /opt/mendix/build/startup.py &&\
     find /opt/mendix/build -name "*.mda" -exec unzip -o {} -d /opt/mendix/build \; -exec rm {} \; &&\

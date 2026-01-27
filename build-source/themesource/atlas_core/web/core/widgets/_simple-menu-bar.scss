@@ -1,0 +1,235 @@
+//
+// DISCLAIMER:
+// Do not change this file because it is core styling.
+// Customizing core files will make updating Atlas much more difficult in the future.
+// To customize any core styling, copy the part you want to customize to styles/web/sass/app/ so the core styling is overwritten.
+//
+@mixin simple-menu-bar() {
+    /* ==========================================================================
+       Navigation
+
+       Default Mendix simple menu bar
+    ========================================================================== */
+    .mx-menubar {
+        padding: 0;
+        background: var(--navigation-bg);
+
+        ul.mx-menubar-list {
+            display: flex;
+            width: 100%;
+            min-height: 58px;
+
+            li.mx-menubar-item {
+                margin: 0;
+
+                > a {
+                    display: flex;
+                    overflow: hidden;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100%;
+                    padding: var(--navigation-item-padding);
+                    white-space: nowrap;
+                    color: var(--navigation-color);
+                    border-radius: 0;
+                    font-size: var(--navigation-font-size);
+                    font-weight: var(--font-weight-normal);
+
+                    img {
+                        margin-right: 0.5em;
+                    }
+
+                    .glyphicon,
+                    .mx-icon-lined,
+                    .mx-icon-filled {
+                        top: -1px;
+                        margin-right: 0.5em;
+                        vertical-align: middle;
+                        font-size: var(--navigation-glyph-size);
+                    }
+                }
+
+                a:hover,
+                a:focus,
+                &:hover a,
+                &:focus a,
+                &.active a {
+                    text-decoration: none;
+                    color: var(--navigation-color-hover);
+                    background: var(--navigation-bg-hover);
+                }
+
+                &.active a {
+                    color: var(--navigation-color-active);
+                    background: var(--navigation-bg-active);
+                }
+            }
+        }
+
+        /* remove focus */
+        &:focus {
+            outline: 0;
+        }
+    }
+
+    // Vertical variation specifics
+    .mx-menubar-vertical {
+        background: var(--navigation-bg);
+
+        ul.mx-menubar-list {
+            display: flex;
+            flex-direction: column;
+
+            li.mx-menubar-item {
+                display: block;
+
+                a {
+                    border-bottom: 1px solid var(--navigation-border-color);
+                }
+            }
+        }
+    }
+
+    // Horizontal variation specifics
+    .mx-menubar-horizontal {
+        box-shadow: 2px 0 4px 0 rgba(0, 0, 0, 0.14);
+
+        ul.mx-menubar-list {
+            li.mx-menubar-item {
+                width: auto;
+
+                a {
+                    width: 100%;
+                }
+            }
+        }
+
+        /* Two menu items */
+        &.menubar-col-6 ul.mx-menubar-list li.mx-menubar-item {
+            width: 50%;
+        }
+
+        /* Three menu items */
+        &.menubar-col-4 ul.mx-menubar-list li.mx-menubar-item {
+            width: 33.33333333%;
+        }
+
+        /* Four menu items */
+        &.menubar-col-3 ul.mx-menubar-list li.mx-menubar-item {
+            width: 25%;
+        }
+
+        /* Five menu items */
+        &.menubar-col-2 ul.mx-menubar-list li.mx-menubar-item {
+            width: 20%;
+        }
+    }
+
+    //== Regions
+    //## Behavior in the different regions
+    //-------------------------------------------------------------------------------------------------------------------//
+    // When used in topbar
+    .region-topbar {
+        .mx-menubar {
+            background: var(--navtopbar-bg);
+
+            ul.mx-menubar-list {
+                li.mx-menubar-item {
+                    a {
+                        color: var(--navtopbar-color);
+                        font-size: var(--navtopbar-font-size);
+
+                        .glyphicon,
+                        .mx-icon-lined,
+                        .mx-icon-filled {
+                            font-size: var(--navtopbar-glyph-size);
+                        }
+                    }
+
+                    a:hover,
+                    a:focus,
+                    &:hover a,
+                    &:focus a,
+                    &.active a {
+                        color: var(--navtopbar-color-hover);
+                        background: var(--navtopbar-bg-hover);
+                    }
+
+                    &.active a {
+                        color: var(--navtopbar-color-active);
+                        background: var(--navtopbar-bg-active);
+                    }
+                }
+            }
+        }
+
+        // Vertical variation specifics
+        .mx-menubar-vertical {
+            background: var(--navtopbar-bg);
+
+            ul.mx-menubar-list {
+                li.mx-menubar-item {
+                    a {
+                        height: var(--navigation-item-height);
+                        border-color: var(--navtopbar-border-color);
+                    }
+                }
+            }
+        }
+    }
+
+    // When used in sidebar
+    .region-sidebar {
+        .mx-menubar {
+            background: var(--navsidebar-bg);
+
+            ul.mx-menubar-list {
+                li.mx-menubar-item {
+                    a {
+                        color: var(--navsidebar-color);
+                        font-size: var(--navsidebar-font-size);
+
+                        .glyphicon,
+                        .mx-icon-lined,
+                        .mx-icon-filled {
+                            font-size: var(--navsidebar-glyph-size);
+                        }
+                    }
+
+                    a:hover,
+                    a:focus,
+                    &:hover a,
+                    &:focus a,
+                    &.active a {
+                        color: var(--navsidebar-color-hover);
+                        background: var(--navsidebar-bg-hover);
+                    }
+
+                    &.active a {
+                        color: var(--navsidebar-color-active);
+                        background: var(--navsidebar-bg-active);
+                    }
+                }
+            }
+        }
+
+        // Vertical variation specifics
+        .mx-menubar-vertical {
+            background: var(--navsidebar-bg);
+
+            ul.mx-menubar-list {
+                li.mx-menubar-item {
+                    a {
+                        border-color: var(--navsidebar-border-color);
+                    }
+                }
+            }
+        }
+    }
+
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+        .mx-menubar {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    }
+}

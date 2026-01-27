@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db # 서비스 이름 (Mendix 앱에서 'db' 호스트네임으로 접근)
+spec:
+  ports:
+  - port: 5432       # 서비스 노출 포트
+    targetPort: 5432 # 컨테이너 내부 포트
+  selector:
+    app: postgres
+---
+apiVersion: apps/v1
+kind: StatefulSet # DB와 같이 상태 저장이 필요한 경우 Deployment 대신 StatefulSet 사용
+metadata:
+  name: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  serviceName: "db"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13 # 호환되는 PostgreSQL 버전 사용
+        env:
+        # 주의: 실제 운영 환경에서는 Secret을 사용해야 합니다.
+        - name: POSTGRES_USER
+          value: mendix
+        - name: POSTGRES_PASSWORD
+          value: mendix
+        - name: POSTGRES_DB
+          value: mendix
+        ports:
+        - containerPort: 5432
+          name: postgres
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data # 데이터가 저장될 컨테이너 내부 경로
+  
+  # PVC 템플릿: 각 파드마다 고유한 PV(Persistent Volume)를 동적 생성
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi # 로컬 테스트용 작은 용량

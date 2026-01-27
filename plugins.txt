@@ -3,3 +3,18 @@ workflow-aggregator
 docker-workflow
 blueocean
 configuration-as-code
+# Standard Recommended Plugins
+ant
+gradle
+github
+ssh-slaves
+matrix-auth
+pam-auth
+ldap
+email-ext
+mailer
+ws-cleanup
+timestamper
+credentials-binding
+pipeline-stage-view
+pipeline-github-lib
