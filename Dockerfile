@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     gnupg \
     sudo \
-    python3
+    python3 \
+    python3-requests
 
 # 2. Docker 공식 GPG 키 추가 및 리포지토리 설정
 RUN mkdir -p /etc/apt/keyrings && \

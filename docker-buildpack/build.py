@@ -201,6 +201,8 @@ def prepare_destination(destination_path):
     project_path = os.path.join(destination_path, 'project')
     os.mkdir(project_path, 0o755)
     shutil.copytree('scripts', os.path.join(destination_path, 'scripts'))
+    if os.path.exists('build-cache'):
+         shutil.copyreset = shutil.copytree('build-cache', os.path.join(destination_path, 'build-cache'))
     shutil.copyfile('Dockerfile', os.path.join(destination_path, 'Dockerfile'))
     return project_path
 

@@ -51,10 +51,19 @@ ENV CF_STACK=cflinuxfs4
 # 4. Delete CF buildpack zip archive
 # 5. Update ownership of /opt/mendix so that the app can run as a non-root user
 # 6. Update permissions of /opt/mendix so that the app can run as a non-root user
+# Copy local cache (if exists)
+COPY build-cache /tmp/build-cache
+
 RUN mkdir -p /opt/mendix/buildpack /opt/mendix/build &&\
     ln -s /root /home/vcap &&\
-    echo "Downloading CF Buildpack from ${CF_BUILDPACK_URL}" &&\
-    curl -fsSL ${CF_BUILDPACK_URL} -o /tmp/cf-mendix-buildpack.zip && \
+    echo "Checking for local CF Buildpack..." &&\
+    if [ -f /tmp/build-cache/cf-mendix-buildpack.zip ]; then \
+    echo "Using local CF Buildpack from build-cache"; \
+    cp /tmp/build-cache/cf-mendix-buildpack.zip /tmp/cf-mendix-buildpack.zip; \
+    else \
+    echo "Downloading CF Buildpack from ${CF_BUILDPACK_URL}"; \
+    curl -fsSL ${CF_BUILDPACK_URL} -o /tmp/cf-mendix-buildpack.zip; \
+    fi && \
     python3 -m zipfile -e /tmp/cf-mendix-buildpack.zip /opt/mendix/buildpack/ &&\
     rm /tmp/cf-mendix-buildpack.zip &&\
     chown -R ${USER_UID}:0 /opt/mendix &&\

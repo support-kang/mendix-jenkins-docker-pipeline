@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mendix-app
+spec:
+  type: LoadBalancer 
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: mendix-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mendix-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mendix-app
+  template:
+    metadata:
+      labels:
+        app: mendix-app
+    spec:
+      containers:
+      - name: mendix-app
+        image: mendix-app:latest
+        imagePullPolicy: IfNotPresent  # Use local image if available (important for Docker Desktop)
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ADMIN_PASSWORD
+          value: "Password1234!"
+        - name: DATABASE_ENDPOINT
+          value: "postgres://mendix:mendix@db:5432/mendix"
+        - name: MXRUNTIME_Log_Level
+          value: "INFO"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 120
+          periodSeconds: 20
