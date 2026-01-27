@@ -1,25 +1,25 @@
 apiVersion: v1
-kind: Service
+kind: Service # 서비스: 외부에서 앱에 접속할 수 있도록 네트워크 노출
 metadata:
   name: mendix-app
 spec:
-  type: LoadBalancer 
+  type: LoadBalancer # 로드밸런서: 외부 IP(또는 localhost)를 할당받아 접속 가능하게 함
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: 8080       # 외부 접속 포트
+    targetPort: 8080 # 컨테이너 내부 포트
   selector:
-    app: mendix-app
+    app: mendix-app  # 트래픽을 전달할 파드 선택 (Deployment의 라벨과 일치해야 함)
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: Deployment # 디플로이먼트: 무중단 배포 및 파드 개수 관리 (웹 앱에 적합)
 metadata:
   name: mendix-app
 spec:
-  replicas: 1
+  replicas: 1 # 파드 개수 (트래픽이 늘어나면 이 숫자를 늘려서 스케일 아웃)
   selector:
     matchLabels:
       app: mendix-app
-  template:
+  template: # 파드 템플릿: 실제 생성될 파드의 모양 정의
     metadata:
       labels:
         app: mendix-app
@@ -27,23 +27,23 @@ spec:
       containers:
       - name: mendix-app
         image: mendix-app:latest
-        imagePullPolicy: IfNotPresent  # Use local image if available (important for Docker Desktop)
+        imagePullPolicy: IfNotPresent  # 로컬 이미지가 있으면 사용 (Docker Desktop/Minikube 필수 설정)
         ports:
         - containerPort: 8080
-        env:
+        env: # 환경 변수: DB 연결 정보 및 Mendix 설정 주입
         - name: ADMIN_PASSWORD
           value: "Password1234!"
         - name: DATABASE_ENDPOINT
-          value: "postgres://mendix:mendix@db:5432/mendix"
+          value: "postgres://mendix:mendix@db:5432/mendix" # 'db'는 postgres.yaml에서 정의한 Service 이름
         - name: MXRUNTIME_Log_Level
           value: "INFO"
-        readinessProbe:
+        readinessProbe: # 준비성 검사: 이 검사가 통과되어야 트래픽을 받음 (앱이 켜지는 중일 때 보호)
           httpGet:
             path: /
             port: 8080
           initialDelaySeconds: 60
           periodSeconds: 10
-        livenessProbe:
+        livenessProbe: # 생존성 검사: 이 검사가 실패하면 파드를 재시작 (앱이 죽었는지 확인)
           httpGet:
             path: /
             port: 8080

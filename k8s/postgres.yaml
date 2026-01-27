@@ -1,24 +1,24 @@
 apiVersion: v1
-kind: Service
+kind: Service  # 서비스(Service): 파드에 접근하기 위한 네트워크 엔드포인트 정의
 metadata:
   name: db
 spec:
   ports:
-  - port: 5432
-    targetPort: 5432
+  - port: 5432       # 서비스가 노출하는 포트
+    targetPort: 5432 # 파드 내부의 컨테이너 포트
   selector:
-    app: postgres
+    app: postgres    # 이 라벨을 가진 파드로 트래픽을 전달
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: StatefulSet # StatefulSet: DB처럼 상태(데이터)가 중요한 애플리케이션 관리에 사용
 metadata:
   name: postgres
 spec:
   selector:
     matchLabels:
       app: postgres
-  serviceName: "db"
-  replicas: 1
+  serviceName: "db" # 연결할 서비스 이름
+  replicas: 1       # 파드 개수
   template:
     metadata:
       labels:
@@ -39,12 +39,12 @@ spec:
           name: postgres
         volumeMounts:
         - name: postgres-data
-          mountPath: /var/lib/postgresql/data
-  volumeClaimTemplates:
+          mountPath: /var/lib/postgresql/data # 컨테이너 내부 데이터 경로
+  volumeClaimTemplates: # PVC: 영구 스토리지 요청 (파드가 삭제되어도 데이터 보존)
   - metadata:
       name: postgres-data
     spec:
-      accessModes: [ "ReadWriteOnce" ]
+      accessModes: [ "ReadWriteOnce" ] # 하나의 노드에서만 읽기/쓰기 가능
       resources:
         requests:
           storage: 1Gi
