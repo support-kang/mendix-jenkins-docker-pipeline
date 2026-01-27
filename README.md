@@ -172,6 +172,7 @@ kubectl create namespace mendix
 
 # 매니페스트 적용 (-n mendix 옵션은 네임스페이스 사용 시)
 kubectl apply -f k8s/postgres.yaml
+kubectl apply -f k8s/metrics-server.yaml # Metrics Server 설치 (HPA 필수)
 kubectl apply -f k8s/mendix-app.yaml
 ```
 
@@ -399,6 +400,7 @@ kubectl create namespace mendix
 
 # Apply Manifests
 kubectl apply -f k8s/postgres.yaml
+kubectl apply -f k8s/metrics-server.yaml # Install Metrics Server (Required for HPA)
 kubectl apply -f k8s/mendix-app.yaml
 ```
 

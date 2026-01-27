@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: mendix-app # 서비스 이름 (내부 DNS로 사용됨)
 spec:
+  sessionAffinity: ClientIP # [추가] 중요: 다중 파드로 스케일 아웃 시 세션 유지를 위해 필요 (Sticky Session)
   type: LoadBalancer # 외부 접속 허용 (로컬/클라우드 환경에 따라 동작 다름)
   ports:
   - port: 8080       # 서비스가 노출할 포트
@@ -38,6 +39,15 @@ spec:
           value: "postgres://mendix:mendix@db:5432/mendix" # db: postgres Service 이름
         - name: MXRUNTIME_Log_Level
           value: "INFO"
+        
+        # [추가] HPA 사용을 위해 리소스 제한 설정 필수
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
         
         # Readiness Probe: 트래픽을 받을 준비가 되었는지 확인 (실패 시 서비스에서 제외)
         readinessProbe:
