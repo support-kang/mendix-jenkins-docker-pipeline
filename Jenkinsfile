@@ -71,6 +71,7 @@ pipeline {
                         // build.py 실행 (소스 -> MDA/Project 변환)
                         // build.py가 내부 'scripts' 폴더를 참조하므로 실행 위치를 docker-buildpack으로 변경해야 함
                         dir('docker-buildpack') {
+                            sh 'mkdir -p build-cache'
                             sh """
                             python3 build.py \
                                 --source ../build-source \
